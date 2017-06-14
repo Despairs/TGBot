@@ -13,6 +13,8 @@ import com.despairs.telegram.bot.producer.NewXboxOneProducer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -20,6 +22,7 @@ import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 /**
  *
@@ -92,6 +95,12 @@ public class Bot extends TelegramLongPollingBot implements Runnable {
 
     @Override
     public void onUpdateReceived(Update update) {
+        try {
+            Message message = update.getChannelPost();
+            sendMessage(new SendMessage().setChatId(message.getChatId()).setReplyToMessageId(message.getMessageId()).setText("Ок, обновляю"));
+        } catch (TelegramApiException ex) {
+            ex.printStackTrace();
+        }
         run();
     }
 
