@@ -9,6 +9,7 @@ import com.despairs.telegram.bot.utils.FileUtils;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.TGMessage;
 import com.vk.api.sdk.client.VkApiClient;
+import com.vk.api.sdk.client.actors.UserActor;
 import com.vk.api.sdk.exceptions.ApiException;
 import com.vk.api.sdk.exceptions.ClientException;
 import com.vk.api.sdk.httpclient.HttpTransportClient;
@@ -24,15 +25,19 @@ import java.util.List;
  */
 public class VkWallpostProducer implements MessageProducer {
 
-    private static final String FILENAME_PATTERN = "VKWallpostCount_%s.txt";
+    private static final String FILENAME_STORAGE_PATTERN = "VKWallpostCount_%s.txt";
+    private static final String FILENAME_CFG_PATTERN = "VKToken.cfg";
     private static final String VIDEO_LINK_PATTERN = "https://vk.com/video%d_%d";
 
     private final VkApiClient vk = new VkApiClient(new HttpTransportClient());
 
     private final String person;
+    private final UserActor actor;
 
     public VkWallpostProducer(String person) {
         this.person = person;
+        List<String> lines = FileUtils.readAsList(FILENAME_CFG_PATTERN);
+        actor = new UserActor(Integer.parseInt(lines.get(0)), lines.get(1));
     }
 
     @Override
@@ -45,7 +50,7 @@ public class VkWallpostProducer implements MessageProducer {
             isPinned = lastPost.getItems().get(0).getIsPinned();
         }
         int lastPostNumber = 0;
-        String s = FileUtils.read(String.format(FILENAME_PATTERN, person));
+        String s = FileUtils.read(String.format(FILENAME_STORAGE_PATTERN, person));
         if (!s.isEmpty()) {
             lastPostNumber = Integer.parseInt(s);
         }
@@ -62,7 +67,7 @@ public class VkWallpostProducer implements MessageProducer {
                         ret.add(convertWallpost(post));
                     }
                 });
-                FileUtils.write(String.valueOf(currentCount), String.format(FILENAME_PATTERN, person), false);
+                FileUtils.write(String.valueOf(currentCount), String.format(FILENAME_STORAGE_PATTERN, person), false);
             }
         }
         return ret;
@@ -126,7 +131,7 @@ public class VkWallpostProducer implements MessageProducer {
     }
 
     private GetResponse getPostsResponse(int count, int offset) throws ApiException, ClientException {
-        return vk.wall().get()
+        return vk.wall().get(actor)
                 .domain(person)
                 .offset(offset)
                 .count(count)
