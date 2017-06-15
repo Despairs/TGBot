@@ -61,10 +61,10 @@ public class VkWallpostProducer implements MessageProducer {
                 response.getItems().stream().forEach(post -> {
                     if (post.getCopyHistory() != null) {
                         post.getCopyHistory().stream().forEach(p -> {
-                            ret.add(convertWallpost(p));
+                            ret.addAll(convertWallpost(p));
                         });
                     } else {
-                        ret.add(convertWallpost(post));
+                        ret.addAll(convertWallpost(post));
                     }
                 });
                 FileUtils.write(String.valueOf(currentCount), String.format(FILENAME_STORAGE_PATTERN, person), false);
@@ -73,45 +73,70 @@ public class VkWallpostProducer implements MessageProducer {
         return ret;
     }
 
-    private TGMessage convertWallpost(Wallpost post) {
-        TGMessage ret = new TGMessage();
-        ret.setType(MessageType.TEXT);
-        ret.setText(post.getText());
+    private List<TGMessage> convertWallpost(Wallpost post) {
+        List<TGMessage> ret = new ArrayList<>();
+        TGMessage baseMessage = new TGMessage();
+        baseMessage.setType(MessageType.TEXT);
+        baseMessage.setText(post.getText());
         if (post.getAttachments() != null) {
+            int attachCount = post.getAttachments().size();
             post.getAttachments().stream().forEach(attach -> {
                 switch (attach.getType()) {
                     case LINK:
-                        ret.setLink(attach.getLink().getUrl());
+                        if (attachCount > 1) {
+                            TGMessage linkMessage = new TGMessage();
+                            linkMessage.setType(MessageType.TEXT);
+                            linkMessage.setLink(attach.getLink().getUrl());
+                            linkMessage.setRef(baseMessage);
+                            ret.add(linkMessage);
+                        } else {
+                            baseMessage.setLink(attach.getLink().getUrl());
+                            ret.add(baseMessage);
+                        }
                         break;
                     case PHOTO:
-                        if (ret.getText() != null && ret.getText().length() > 200) {
-                            TGMessage ref = new TGMessage();
-                            ref.setType(MessageType.PHOTO);
-                            ref.setLink(getBestPhotoSize(attach.getPhoto()));
-                            ret.setRef(ref);
+                        if (attachCount > 1 || (baseMessage.getText() != null && baseMessage.getText().length() > 200)) {
+                            TGMessage photoMessage = new TGMessage();
+                            photoMessage.setType(MessageType.PHOTO);
+                            photoMessage.setLink(getBestPhotoSize(attach.getPhoto()));
+                            photoMessage.setRef(baseMessage);
+                            ret.add(photoMessage);
                         } else {
-                            ret.setLink(getBestPhotoSize(attach.getPhoto()));
-                            ret.setType(MessageType.PHOTO);
+                            baseMessage.setLink(getBestPhotoSize(attach.getPhoto()));
+                            baseMessage.setType(MessageType.PHOTO);
+                            ret.add(baseMessage);
                         }
                         break;
                     case DOC:
-                        if (ret.getText() != null && ret.getText().length() > 200) {
-                            TGMessage ref = new TGMessage();
-                            ref.setType(MessageType.DOCUMENT);
-                            ret.setLink(attach.getDoc().getUrl());
-                            ret.setRef(ref);
+                        if (attachCount > 1 || (baseMessage.getText() != null && baseMessage.getText().length() > 200)) {
+                            TGMessage docMessage = new TGMessage();
+                            docMessage.setType(MessageType.DOCUMENT);
+                            docMessage.setLink(attach.getDoc().getUrl());
+                            docMessage.setRef(baseMessage);
+                            ret.add(docMessage);
                         } else {
-                            ret.setLink(attach.getDoc().getUrl());
-                            ret.setType(MessageType.DOCUMENT);
+                            baseMessage.setLink(attach.getDoc().getUrl());
+                            baseMessage.setType(MessageType.DOCUMENT);
+                            ret.add(baseMessage);
                         }
                         break;
                     case VIDEO:
-                        ret.setLink(String.format(VIDEO_LINK_PATTERN, post.getOwnerId(), attach.getVideo().getId()));
+                        if (attachCount > 1) {
+                            TGMessage videoMessage = new TGMessage();
+                            videoMessage.setType(MessageType.VIDEO);
+                            videoMessage.setLink(String.format(VIDEO_LINK_PATTERN, post.getOwnerId(), attach.getVideo().getId()));
+                            videoMessage.setRef(baseMessage);
+                            ret.add(videoMessage);
+                        } else {
+                            baseMessage.setLink(String.format(VIDEO_LINK_PATTERN, post.getOwnerId(), attach.getVideo().getId()));
+                            ret.add(baseMessage);
+                        }
                         break;
                 }
             });
         } else {
-            ret.setType(MessageType.TEXT);
+            baseMessage.setType(MessageType.TEXT);
+            ret.add(baseMessage);
         }
         return ret;
     }

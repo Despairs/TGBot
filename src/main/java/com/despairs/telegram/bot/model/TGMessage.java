@@ -5,6 +5,8 @@
  */
 package com.despairs.telegram.bot.model;
 
+import java.util.Objects;
+
 /**
  *
  * @author EKovtunenko
@@ -51,6 +53,43 @@ public class TGMessage {
     @Override
     public String toString() {
         return "Message{" + "link=" + link + ", text=" + text + ", type=" + type + ", ref=" + ref + '}';
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 23 * hash + Objects.hashCode(this.link);
+        hash = 23 * hash + Objects.hashCode(this.text);
+        hash = 23 * hash + Objects.hashCode(this.type);
+        hash = 23 * hash + Objects.hashCode(this.ref);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final TGMessage other = (TGMessage) obj;
+        if (!Objects.equals(this.link, other.link)) {
+            return false;
+        }
+        if (!Objects.equals(this.text, other.text)) {
+            return false;
+        }
+        if (this.type != other.type) {
+            return false;
+        }
+        if (!Objects.equals(this.ref, other.ref)) {
+            return false;
+        }
+        return true;
     }
 
 }

@@ -12,9 +12,9 @@ import com.despairs.telegram.bot.model.TGMessage;
 import com.despairs.telegram.bot.producer.NewXboxOneProducer;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Map;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -51,13 +51,16 @@ public class Bot extends TelegramLongPollingBot implements Runnable {
                 List<TGMessage> messages = producer.produce();
                 if (!messages.isEmpty()) {
                     System.out.println(date + String.format(": Got %d messages from producer %s", messages.size(), producer.getClass().getSimpleName()));
+                    Map<TGMessage, Integer> sendedMessages = new HashMap<>();
                     messages.stream().forEach(m -> {
-                        Integer replyTo = null;
-                        if (m.getRef() != null) {
+                        Integer replyTo = sendedMessages.get(m.getRef());
+                        if (m.getRef() != null && replyTo == null) {
                             Message ret = send(m.getRef(), replyTo);
                             replyTo = ret.getMessageId();
+                            sendedMessages.put(m.getRef(), replyTo);
                         }
-                        send(m, replyTo);
+                        Message ret = send(m, replyTo);
+                        sendedMessages.put(m, ret.getMessageId());
                     });
                 }
             } catch (Exception ex) {
