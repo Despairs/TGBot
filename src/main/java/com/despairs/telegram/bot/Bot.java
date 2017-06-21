@@ -9,6 +9,7 @@ import com.despairs.telegram.bot.utils.MessageBuilder;
 import com.despairs.telegram.bot.producer.VkWallpostProducer;
 import com.despairs.telegram.bot.producer.MessageProducer;
 import com.despairs.telegram.bot.model.TGMessage;
+import com.despairs.telegram.bot.producer.MiuiProducer;
 import com.despairs.telegram.bot.producer.NewXboxOneProducer;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +40,7 @@ public class Bot extends TelegramLongPollingBot implements Runnable {
         this.token = token;
         this.chatId = chatId;
         producers.add(new NewXboxOneProducer());
+        producers.add(new MiuiProducer());
         producers.add(new VkWallpostProducer("elistratov"));
     }
 
