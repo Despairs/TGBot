@@ -62,7 +62,9 @@ public class Bot extends TelegramLongPollingBot implements Runnable {
                             sendedMessages.put(m.getRef(), replyTo);
                         }
                         Message ret = send(m, replyTo);
-                        sendedMessages.put(m, ret.getMessageId());
+                        if (ret != null) {
+                            sendedMessages.put(m, ret.getMessageId());
+                        }
                     });
                 }
             } catch (Exception ex) {
@@ -80,7 +82,7 @@ public class Bot extends TelegramLongPollingBot implements Runnable {
                     ret = sendDocument((SendDocument) msg);
                     break;
                 case PHOTO:
-                    ret = sendPhoto((SendPhoto) msg);
+                    ret = sendPhoto((SendPhoto) msg);                   
                     break;
                 case TEXT:
                 case VIDEO:
