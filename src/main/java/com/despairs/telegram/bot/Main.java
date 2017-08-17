@@ -5,6 +5,8 @@
  */
 package com.despairs.telegram.bot;
 
+import com.despairs.telegram.bot.schedule.Schedule;
+import com.despairs.telegram.bot.schedule.ScheduleRegistry;
 import com.despairs.telegram.bot.utils.FileUtils;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -30,9 +32,13 @@ public class Main {
 
         List<String> cfg = FileUtils.readAsList(CFG);
         try {
-            bot = new Bot(cfg.get(0), cfg.get(1));
+            String token = cfg.get(0);
+            bot = new Bot(token);
             botsApi.registerBot(bot);
-            Executors.newScheduledThreadPool(1).scheduleAtFixedRate(bot, 0, 10, TimeUnit.MINUTES);;
+            String channelId = cfg.get(1);
+            Schedule schedule = new Schedule(bot, channelId);
+            ScheduleRegistry.getInstance().add(schedule);
+            Executors.newScheduledThreadPool(1).scheduleAtFixedRate(schedule, 0, 10, TimeUnit.MINUTES);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

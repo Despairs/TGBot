@@ -6,14 +6,10 @@
 package com.despairs.telegram.bot.utils;
 
 import com.despairs.telegram.bot.model.TGMessage;
-import com.despairs.telegram.bot.model.TGMessage;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -36,10 +32,9 @@ public class MessageBuilder {
                 ret = createPhotoMessage(message, chatId, replyTo);
                 break;
             case TEXT:
-                ret = createTextMessage(message, chatId, replyTo);
-                break;
             case VIDEO:
                 ret = createTextMessage(message, chatId, replyTo);
+                break;
         }
         return ret;
     }
@@ -52,11 +47,20 @@ public class MessageBuilder {
         if (message.getLink() != null) {
             msg += "\n" + message.getLink();
         }
-        return new SendMessage().setChatId(chatId).setReplyToMessageId(replyTo).setText(msg);
+        return new SendMessage()
+                .setChatId(chatId)
+                .setReplyMarkup(message.getKeyboard())
+                .setReplyToMessageId(replyTo)
+                .setText(msg);
     }
 
     private static SendPhoto createPhotoMessage(TGMessage message, String chatId, Integer replyTo) {
-        return new SendPhoto().setChatId(chatId).setReplyToMessageId(replyTo).setPhoto(message.getLink()).setCaption(message.getText());
+        return new SendPhoto()
+                .setChatId(chatId)
+                .setReplyMarkup(message.getKeyboard())
+                .setReplyToMessageId(replyTo)
+                .setPhoto(message.getLink())
+                .setCaption(message.getText());
     }
 
     private static SendDocument createDocumentMessage(TGMessage message, String chatId, Integer replyTo) {
@@ -64,8 +68,12 @@ public class MessageBuilder {
             URL docUrl = new URL(message.getLink());
             URLConnection connection = docUrl.openConnection();
             try (InputStream is = connection.getInputStream()) {
-                return new SendDocument().setChatId(chatId).setReplyToMessageId(replyTo)
-                        .setNewDocument(String.valueOf(System.currentTimeMillis()), is).setCaption(message.getText());
+                return new SendDocument()
+                        .setChatId(chatId)
+                        .setReplyMarkup(message.getKeyboard())
+                        .setReplyToMessageId(replyTo)
+                        .setNewDocument(String.valueOf(System.currentTimeMillis()), is)
+                        .setCaption(message.getText());
             }
         } catch (IOException ex) {
             ex.fillInStackTrace();

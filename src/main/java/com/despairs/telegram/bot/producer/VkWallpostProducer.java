@@ -75,8 +75,7 @@ public class VkWallpostProducer implements MessageProducer {
 
     private List<TGMessage> convertWallpost(Wallpost post) {
         List<TGMessage> ret = new ArrayList<>();
-        TGMessage baseMessage = new TGMessage();
-        baseMessage.setType(MessageType.TEXT);
+        TGMessage baseMessage = new TGMessage(MessageType.TEXT);
         baseMessage.setText(post.getText());
         if (post.getAttachments() != null) {
             int attachCount = post.getAttachments().size();
@@ -84,8 +83,7 @@ public class VkWallpostProducer implements MessageProducer {
                 switch (attach.getType()) {
                     case LINK:
                         if (attachCount > 1) {
-                            TGMessage linkMessage = new TGMessage();
-                            linkMessage.setType(MessageType.TEXT);
+                            TGMessage linkMessage = new TGMessage(MessageType.TEXT);
                             linkMessage.setLink(attach.getLink().getUrl());
                             linkMessage.setRef(baseMessage);
                             ret.add(linkMessage);
@@ -96,8 +94,7 @@ public class VkWallpostProducer implements MessageProducer {
                         break;
                     case PHOTO:
                         if (attachCount > 1 || (baseMessage.getText() != null && baseMessage.getText().length() > 200)) {
-                            TGMessage photoMessage = new TGMessage();
-                            photoMessage.setType(MessageType.PHOTO);
+                            TGMessage photoMessage = new TGMessage(MessageType.PHOTO);
                             photoMessage.setLink(getBestPhotoSize(attach.getPhoto()));
                             photoMessage.setRef(baseMessage);
                             ret.add(photoMessage);
@@ -109,8 +106,7 @@ public class VkWallpostProducer implements MessageProducer {
                         break;
                     case DOC:
                         if (attachCount > 1 || (baseMessage.getText() != null && baseMessage.getText().length() > 200)) {
-                            TGMessage docMessage = new TGMessage();
-                            docMessage.setType(MessageType.DOCUMENT);
+                            TGMessage docMessage = new TGMessage(MessageType.DOCUMENT);
                             docMessage.setLink(attach.getDoc().getUrl());
                             docMessage.setRef(baseMessage);
                             ret.add(docMessage);
@@ -122,8 +118,7 @@ public class VkWallpostProducer implements MessageProducer {
                         break;
                     case VIDEO:
                         if (attachCount > 1) {
-                            TGMessage videoMessage = new TGMessage();
-                            videoMessage.setType(MessageType.VIDEO);
+                            TGMessage videoMessage = new TGMessage(MessageType.VIDEO);
                             videoMessage.setLink(String.format(VIDEO_LINK_PATTERN, post.getOwnerId(), attach.getVideo().getId()));
                             videoMessage.setRef(baseMessage);
                             ret.add(videoMessage);

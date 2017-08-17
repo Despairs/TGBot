@@ -6,6 +6,7 @@
 package com.despairs.telegram.bot.model;
 
 import java.util.Objects;
+import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboardMarkup;
 
 /**
  *
@@ -17,6 +18,11 @@ public class TGMessage {
     private String text;
     private MessageType type;
     private TGMessage ref;
+    private ReplyKeyboardMarkup keyboard;
+
+    public TGMessage(MessageType type) {
+        this.type = type;
+    }
 
     public String getLink() {
         return link;
@@ -48,6 +54,14 @@ public class TGMessage {
 
     public void setRef(TGMessage ref) {
         this.ref = ref;
+    }
+
+    public ReplyKeyboardMarkup getKeyboard() {
+        return keyboard;
+    }
+
+    public void setKeyboard(ReplyKeyboardMarkup keyboard) {
+        this.keyboard = keyboard;
     }
 
     @Override
