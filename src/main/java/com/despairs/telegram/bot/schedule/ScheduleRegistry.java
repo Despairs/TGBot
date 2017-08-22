@@ -5,16 +5,8 @@
  */
 package com.despairs.telegram.bot.schedule;
 
-import com.despairs.telegram.bot.commands.impl.BurgerKingCommand;
-import com.despairs.telegram.bot.commands.Command;
-import com.despairs.telegram.bot.commands.impl.KfcCommand;
-import com.despairs.telegram.bot.commands.impl.StartCommand;
-import com.despairs.telegram.bot.commands.impl.UnknownCommand;
-import com.despairs.telegram.bot.commands.registry.CommandRegistry;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -31,7 +23,7 @@ public class ScheduleRegistry {
     }
 
     public void runAll() {
-        schedules.parallelStream().forEach(s -> s.run());
+        schedules.parallelStream().forEach(Runnable::run);
     }
 
     public void add(Runnable schedule) {

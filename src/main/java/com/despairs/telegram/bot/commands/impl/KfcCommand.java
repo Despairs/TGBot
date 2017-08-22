@@ -41,7 +41,7 @@ public class KfcCommand implements VisibleCommand {
             HttpsUtils.trustAllCerts();
             Document doc = Jsoup.connect(URL + COUPONS_ENDPOINT).get();
             List<String> couponRefs = doc.select(COUPON_REF).stream().map(e -> e.attr(SRC)).collect(Collectors.toList());
-            couponRefs.stream().forEach(src -> {
+            couponRefs.forEach(src -> {
                 TGMessage m = new TGMessage(MessageType.PHOTO);
                 m.setLink(src);
                 ret.add(m);

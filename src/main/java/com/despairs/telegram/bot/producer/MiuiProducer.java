@@ -44,7 +44,7 @@ public class MiuiProducer implements MessageProducer {
             try {
                 doc = Jsoup.connect(URL + f).get();
                 List<String> ids = doc.select(TBODY).stream().map(e -> e.attr(ID)).filter(e -> !e.isEmpty() && !filter.contains(e)).collect(Collectors.toList());
-                ids.stream().forEach(id -> {
+                ids.forEach(id -> {
                     doc.select(String.format(POST_REF, id)).stream().filter(s -> s.text().contains(ROM)).forEach(s -> {
                         TGMessage m = new TGMessage(MessageType.TEXT);
                         m.setText(s.text());

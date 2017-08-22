@@ -10,14 +10,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -27,7 +24,7 @@ public class FileUtils {
 
     public static String read(String name) {
         String ret = "";
-        return readAsList(name).stream().map((s) -> s).reduce(ret, String::concat);
+        return readAsList(name).stream().reduce(ret, String::concat);
     }
 
     public static List<String> readAsList(String name) {

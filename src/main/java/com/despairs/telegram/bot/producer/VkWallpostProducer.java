@@ -43,7 +43,7 @@ public class VkWallpostProducer implements MessageProducer {
     @Override
     public List<TGMessage> produce() throws Exception {
         List<TGMessage> ret = new ArrayList<>();
-        GetResponse lastPost = getPostsResponse(1);
+        GetResponse lastPost = getPostsResponse();
         Integer currentCount = lastPost.getCount();
         Integer isPinned = 0;
         if (!lastPost.getItems().isEmpty() && lastPost.getItems().get(0).getIsPinned() != null) {
@@ -58,11 +58,9 @@ public class VkWallpostProducer implements MessageProducer {
         if (count > 0) {
             GetResponse response = getPostsResponse(count, isPinned);
             if (response.getItems() != null) {
-                response.getItems().stream().forEach(post -> {
+                response.getItems().forEach(post -> {
                     if (post.getCopyHistory() != null) {
-                        post.getCopyHistory().stream().forEach(p -> {
-                            ret.addAll(convertWallpost(p));
-                        });
+                        post.getCopyHistory().forEach(p -> ret.addAll(convertWallpost(p)));
                     } else {
                         ret.addAll(convertWallpost(post));
                     }
@@ -79,7 +77,7 @@ public class VkWallpostProducer implements MessageProducer {
         baseMessage.setText(post.getText());
         if (post.getAttachments() != null) {
             int attachCount = post.getAttachments().size();
-            post.getAttachments().stream().forEach(attach -> {
+            post.getAttachments().forEach(attach -> {
                 switch (attach.getType()) {
                     case LINK:
                         if (attachCount > 1) {
@@ -146,8 +144,8 @@ public class VkWallpostProducer implements MessageProducer {
         return ret;
     }
 
-    private GetResponse getPostsResponse(int count) throws ApiException, ClientException {
-        return getPostsResponse(count, 0);
+    private GetResponse getPostsResponse() throws ApiException, ClientException {
+        return getPostsResponse(1, 0);
     }
 
     private GetResponse getPostsResponse(int count, int offset) throws ApiException, ClientException {

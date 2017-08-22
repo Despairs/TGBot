@@ -35,7 +35,7 @@ public class NewXboxOneProducer implements MessageProducer {
         List<String> filter = FileUtils.readAsList(STORAGE_PATH);
         Document doc = Jsoup.connect(URL).get();
         List<String> ids = doc.select(ARTICLE).stream().map(e -> e.attr(ID)).filter(e -> !filter.contains(e)).collect(Collectors.toList());
-        ids.stream().forEach(id -> {
+        ids.forEach(id -> {
             doc.select(String.format(POST_REF, id)).forEach(s -> {
                 TGMessage m = new TGMessage(MessageType.TEXT);
                 m.setText(s.attr(TITLE));

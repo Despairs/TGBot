@@ -21,8 +21,8 @@ import org.telegram.telegrambots.api.objects.Message;
 public class BaseProcessor implements CommandProcessor {
 
     protected TGMessageSender sender;
-    protected Message message;
-    protected CommandKeyboard keyboard = new CommandKeyboard();
+    protected final Message message;
+    protected final CommandKeyboard keyboard = new CommandKeyboard();
 
     public BaseProcessor(Message message) {
         this.message = message;
@@ -39,7 +39,7 @@ public class BaseProcessor implements CommandProcessor {
         Command command = CommandRegistry.getInstance().getCommand(message.getText());
         if (command != null) {
             List<TGMessage> result = command.invoke(message);
-            result.stream().forEach(m -> {
+            result.forEach(m -> {
                 m.setKeyboard(keyboard);
                 sender.sendTGMessage(m, message.getChatId());
             });
