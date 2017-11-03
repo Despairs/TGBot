@@ -38,8 +38,11 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
 
     @Override
     public void onUpdateReceived(Update update) {
-        CommandProcessor processor = CommandProcessorFactory.getInstance().create(update);
-        processor.bindSender(this).process();
+        Message message = update.getMessage();
+        if ((message != null && !message.isGroupMessage()) || message == null) {
+            CommandProcessor processor = CommandProcessorFactory.getInstance().create(update);
+            processor.bindSender(this).process();
+        }
     }
 
     @Override

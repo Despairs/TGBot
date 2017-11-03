@@ -31,6 +31,11 @@
             <version>1.10.3</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.taskadapter</groupId>
+            <artifactId>redmine-java-api</artifactId>
+            <version>3.0.0</version>
+        </dependency>
     </dependencies>
     
     <build>

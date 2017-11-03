@@ -19,6 +19,8 @@ public class TGMessage {
     private MessageType type;
     private TGMessage ref;
     private ReplyKeyboardMarkup keyboard;
+    private ParseMode parseMode;
+    private String chatId;
 
     public TGMessage(MessageType type) {
         this.type = type;
@@ -64,18 +66,37 @@ public class TGMessage {
         this.keyboard = keyboard;
     }
 
+    public ParseMode getParseMode() {
+        return parseMode;
+    }
+
+    public void setParseMode(ParseMode parseMode) {
+        this.parseMode = parseMode;
+    }
+
+    public String getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(String chatId) {
+        this.chatId = chatId;
+    }
+
     @Override
     public String toString() {
-        return "Message{" + "link=" + link + ", text=" + text + ", type=" + type + ", ref=" + ref + '}';
+        return "TGMessage{" + "link=" + link + ", text=" + text + ", type=" + type + ", ref=" + ref + ", keyboard=" + keyboard + ", parseMode=" + parseMode + ", chatId=" + chatId + '}';
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + Objects.hashCode(this.link);
-        hash = 23 * hash + Objects.hashCode(this.text);
-        hash = 23 * hash + Objects.hashCode(this.type);
-        hash = 23 * hash + Objects.hashCode(this.ref);
+        int hash = 3;
+        hash = 47 * hash + Objects.hashCode(this.link);
+        hash = 47 * hash + Objects.hashCode(this.text);
+        hash = 47 * hash + Objects.hashCode(this.type);
+        hash = 47 * hash + Objects.hashCode(this.ref);
+        hash = 47 * hash + Objects.hashCode(this.keyboard);
+        hash = 47 * hash + Objects.hashCode(this.parseMode);
+        hash = 47 * hash + Objects.hashCode(this.chatId);
         return hash;
     }
 
@@ -97,10 +118,19 @@ public class TGMessage {
         if (!Objects.equals(this.text, other.text)) {
             return false;
         }
+        if (!Objects.equals(this.chatId, other.chatId)) {
+            return false;
+        }
         if (this.type != other.type) {
             return false;
         }
         if (!Objects.equals(this.ref, other.ref)) {
+            return false;
+        }
+        if (!Objects.equals(this.keyboard, other.keyboard)) {
+            return false;
+        }
+        if (this.parseMode != other.parseMode) {
             return false;
         }
         return true;

@@ -51,6 +51,7 @@ public class MessageBuilder {
                 .setChatId(chatId)
                 .setReplyMarkup(message.getKeyboard())
                 .setReplyToMessageId(replyTo)
+                .setParseMode(message.getParseMode() != null ? message.getParseMode().name() : null)
                 .setText(msg);
     }
 

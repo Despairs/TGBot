@@ -19,7 +19,7 @@ import org.telegram.telegrambots.api.objects.replykeyboard.buttons.KeyboardRow;
  */
 public class CommandKeyboard extends ReplyKeyboardMarkup {
 
-    private final int maxColumnCount = 2;
+    private static final int maxColumnCount = 2;
 
     public CommandKeyboard() {
         super();

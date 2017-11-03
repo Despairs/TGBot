@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 /**
  *
@@ -43,9 +44,9 @@ public class MiuiProducer implements MessageProducer {
             Document doc;
             try {
                 doc = Jsoup.connect(URL + f).get();
-                List<String> ids = doc.select(TBODY).stream().map(e -> e.attr(ID)).filter(e -> !e.isEmpty() && !filter.contains(e)).collect(Collectors.toList());
+                List<String> ids = doc.select(TBODY).stream().map(e -> e.attr(ID)).filter(e -> !e.isEmpty() && !filter.contains(e)).distinct().collect(Collectors.toList());
                 ids.forEach(id -> {
-                    doc.select(String.format(POST_REF, id)).stream().filter(s -> s.text().contains(ROM)).forEach(s -> {
+                    doc.select(String.format(POST_REF, id)).stream().filter(s -> s.text().contains(ROM)).distinct().forEach(s -> {
                         TGMessage m = new TGMessage(MessageType.TEXT);
                         m.setText(s.text());
                         m.setLink(URL + s.attr(HREF));

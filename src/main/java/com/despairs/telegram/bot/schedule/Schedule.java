@@ -10,6 +10,7 @@ import com.despairs.telegram.bot.model.TGMessage;
 import com.despairs.telegram.bot.producer.MessageProducer;
 import com.despairs.telegram.bot.producer.MiuiProducer;
 import com.despairs.telegram.bot.producer.NewXboxOneProducer;
+import com.despairs.telegram.bot.producer.RedmineIssueProducer;
 import com.despairs.telegram.bot.producer.VkWallpostProducer;
 import java.util.ArrayList;
 import java.util.Date;
@@ -39,6 +40,7 @@ public class Schedule implements Runnable {
         producers.add(new NewXboxOneProducer());
         producers.add(new MiuiProducer());
         producers.add(new VkWallpostProducer("elistratov"));
+        producers.add(new RedmineIssueProducer());
     }
 
     @Override
@@ -52,13 +54,17 @@ public class Schedule implements Runnable {
                     System.out.println(date + String.format(": Got %d messages from producer %s", messages.size(), producer.getClass().getSimpleName()));
                     Map<TGMessage, Integer> sendedMessages = new HashMap<>();
                     messages.forEach(m -> {
-                        Integer replyTo = sendedMessages.get(m.getRef());
-                        if (m.getRef() != null && replyTo == null) {
-                            Message ret = sender.sendTGMessage(m.getRef(), chatId, replyTo);
+                        Integer replyTo = null;
+                        if (m.getRef() != null) {
+                            replyTo = sendedMessages.get(m.getRef());
+                        }
+                        String _chatId = m.getChatId() != null ? m.getChatId() : chatId;
+                        if (replyTo == null && m.getRef() != null) {
+                            Message ret = sender.sendTGMessage(m.getRef(), _chatId, replyTo);
                             replyTo = ret.getMessageId();
                             sendedMessages.put(m.getRef(), replyTo);
                         }
-                        Message ret = sender.sendTGMessage(m, chatId, replyTo);
+                        Message ret = sender.sendTGMessage(m, _chatId, replyTo);
                         if (ret != null) {
                             sendedMessages.put(m, ret.getMessageId());
                         }
