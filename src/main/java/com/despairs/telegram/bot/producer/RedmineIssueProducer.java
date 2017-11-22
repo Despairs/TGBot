@@ -5,11 +5,16 @@
  */
 package com.despairs.telegram.bot.producer;
 
+import com.despairs.telegram.bot.db.repo.ProcessedReferenceRepository;
+import com.despairs.telegram.bot.db.repo.SettingsRepository;
+import com.despairs.telegram.bot.db.repo.impl.ProcessedReferenceRepositoryImpl;
+import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.ParseMode;
+import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.model.TGMessage;
-import com.despairs.telegram.bot.utils.FileUtils;
 import com.despairs.telegram.bot.utils.HttpsUtils;
+import com.despairs.telegram.bot.utils.StringUtils;
 import com.taskadapter.redmineapi.IssueManager;
 import com.taskadapter.redmineapi.Params;
 import com.taskadapter.redmineapi.RedmineException;
@@ -17,6 +22,7 @@ import com.taskadapter.redmineapi.RedmineManager;
 import com.taskadapter.redmineapi.RedmineManagerFactory;
 import com.taskadapter.redmineapi.bean.Issue;
 import com.taskadapter.redmineapi.internal.ResultsWrapper;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,13 +35,7 @@ import org.apache.http.impl.client.HttpClients;
  */
 public class RedmineIssueProducer implements MessageProducer {
 
-    private static final String CFG_PATH = "redmine.cfg";
-    
-    private static final List<String> CFG = FileUtils.readAsList(CFG_PATH);
-    
-    private static final String URL = CFG.get(0);
-    private static final String ISSUE_URL = URL + "issues/%d";
-    private static final String STORAGE_PATH = "redmine_%s";
+    private static final String PRODUCER_ID = "REDMINE";
 
     private static final String MESSAGE_PATTERN = "<b>Заголовок</b>: <pre>%s</pre>\n"
             + "<b>Автор</b>: <pre>%s</pre>\n"
@@ -47,34 +47,59 @@ public class RedmineIssueProducer implements MessageProducer {
 
     private static final String DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
-    private static final String CHANNEL_ID = CFG.get(1);
+    private final SettingsRepository settings = SettingsRepositoryImpl.getInstance();
+    private final ProcessedReferenceRepository references = ProcessedReferenceRepositoryImpl.getInstance();
 
-    private static final List<String> USERS = Arrays.asList("93", "95"); //93 - Developer Java, 95 - Архитектор ESB
+    private final String url;
+    private final String issue_url;
+    private final String channelId;
+    private final String apiKey;
+    private final List<String> users;
+
+    public RedmineIssueProducer() throws SQLException {
+        url = settings.getValueV(Settings.REDMINE_HOST);
+        issue_url = url + "issues/%d";
+        channelId = settings.getValueV(Settings.REDMINE_CHANNEL_ID);
+        apiKey = settings.getValueV(Settings.REDMINE_API_KEY);
+        users = Arrays.asList(settings.getValueV(Settings.REDMINE_ISSUES_ASSIGNED_TO_USERS).split(","));
+    }
 
     @Override
     public List<TGMessage> produce() throws Exception {
         List<TGMessage> ret = new ArrayList<>();
 
         RedmineManager mgr = RedmineManagerFactory.
-                createWithApiKey(URL, CFG.get(2), HttpClients
+                createWithApiKey(url, apiKey, HttpClients
                         .custom()
                         .setSSLSocketFactory(HttpsUtils.getSSLConnectionSocketFactory())
                         .build());
         IssueManager issueManager = mgr.getIssueManager();
-        USERS.forEach(user -> {
-            List<String> filter = FileUtils.readAsList(String.format(STORAGE_PATH, user));
+        users.forEach(user -> {
             try {
                 ResultsWrapper<Issue> issuesWrapper = issueManager.getIssues(new Params().add("assigned_to_id", user));
                 List<Issue> issues = issuesWrapper.getResults();
-                issues.parallelStream().filter(issue -> !filter.contains(String.valueOf(issue.getId()))).forEach(issue -> {
-                    TGMessage m = new TGMessage(MessageType.TEXT);
-                    m.setText(buildMessage(issue));
-                    m.setLink(String.format(ISSUE_URL, issue.getId()));
-                    m.setParseMode(ParseMode.HTML);
-                    m.setChatId(CHANNEL_ID);
-                    ret.add(m);
-                    FileUtils.write(String.valueOf(issue.getId()), String.format(STORAGE_PATH, user));
-                });
+                issues.stream()
+                        .filter(issue -> {
+                            try {
+                                return !references.isReferenceStored(String.valueOf(issue.getId()), PRODUCER_ID);
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                                return false;
+                            }
+                        })
+                        .forEach(_issue -> {
+                            TGMessage m = new TGMessage(MessageType.TEXT);
+                            m.setText(buildMessage(_issue));
+                            m.setLink(String.format(issue_url, _issue.getId()));
+                            m.setParseMode(ParseMode.HTML);
+                            m.setChatId(channelId);
+                            ret.add(m);
+                            try {
+                                references.storeReference(String.valueOf(_issue.getId()), PRODUCER_ID);
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                            }
+                        });
             } catch (RedmineException ex) {
                 ex.printStackTrace();
             }
@@ -83,18 +108,14 @@ public class RedmineIssueProducer implements MessageProducer {
     }
 
     private String buildMessage(Issue issue) {
-        String description = issue.getDescription().replaceAll("&", "amp&;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
-        if (description.length() > 4096) {
-            description = description.substring(0, 4090).concat("...");
-        }
         String ret = String.format(MESSAGE_PATTERN,
-                issue.getSubject(),
+                StringUtils.normalize(issue.getSubject()),
                 issue.getAuthorName(),
                 issue.getAssigneeName(),
                 new SimpleDateFormat(DATE_PATTERN).format(issue.getCreatedOn()),
                 issue.getDueDate() != null ? new SimpleDateFormat(DATE_PATTERN).format(issue.getDueDate()) : "",
                 issue.getPriorityText(),
-                description);
+                StringUtils.normalize(issue.getDescription()));
         return ret;
     }
 

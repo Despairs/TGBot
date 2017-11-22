@@ -10,8 +10,12 @@ import com.despairs.telegram.bot.commands.impl.KfcCommand;
 import com.despairs.telegram.bot.commands.processor.CommandProcessor;
 import com.despairs.telegram.bot.commands.processor.CommandProcessorFactory;
 import com.despairs.telegram.bot.commands.registry.CommandRegistry;
+import com.despairs.telegram.bot.db.repo.SettingsRepository;
+import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
+import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.utils.MessageBuilder;
 import com.despairs.telegram.bot.model.TGMessage;
+import java.sql.SQLException;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -26,12 +30,14 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
  */
 public class Bot extends TelegramLongPollingBot implements TGMessageSender {
 
-    private static final String BOT_NAME = "DespairsMiscBot";
+    private final SettingsRepository settings = SettingsRepositoryImpl.getInstance();
 
     private final String token;
+    private final String botName;
 
-    public Bot(String token) {
-        this.token = token;
+    public Bot() throws SQLException {
+        token = settings.getValueV(Settings.BOT_TOKEN);
+        botName = settings.getValueV(Settings.BOT_NAME);
         CommandRegistry.getInstance().registerCommand("Burger King", new BurgerKingCommand());
         CommandRegistry.getInstance().registerCommand("KFC", new KfcCommand());
     }
@@ -90,6 +96,6 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
 
     @Override
     public String getBotUsername() {
-        return BOT_NAME;
+        return botName;
     }
 }

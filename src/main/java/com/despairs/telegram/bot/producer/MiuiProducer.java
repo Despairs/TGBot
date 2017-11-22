@@ -5,10 +5,12 @@
  */
 package com.despairs.telegram.bot.producer;
 
+import com.despairs.telegram.bot.db.repo.ProcessedReferenceRepository;
+import com.despairs.telegram.bot.db.repo.impl.ProcessedReferenceRepositoryImpl;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.TGMessage;
-import com.despairs.telegram.bot.utils.FileUtils;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,12 +24,12 @@ import org.jsoup.nodes.Document;
  */
 public class MiuiProducer implements MessageProducer {
 
+    private static final String PRODUCER_ID = "MIUI";
+
     private static final String URL = "http://en.miui.com/";
     private static final String MI5S_FORUM = "forum-115-1.html";
     private static final String MI5_FORUM = "forum-92-1.html";
     private static final List<String> FORUMS = Arrays.asList(MI5S_FORUM, MI5_FORUM);
-
-    private static final String STORAGE_PATH = "miui.txt";
 
     private static final String TBODY = "tbody";
     private static final String ID = "id";
@@ -35,15 +37,27 @@ public class MiuiProducer implements MessageProducer {
     private static final String POST_REF = "tbody[id=%s] tr th div[class=avatarbox-info] div[class=sub-tit] a[class=s xst]";
     private static final String ROM = "ROM";
 
+    private final ProcessedReferenceRepository references = ProcessedReferenceRepositoryImpl.getInstance();
+
     @Override
     public List<TGMessage> produce() throws Exception {
         List<TGMessage> ret = new ArrayList<>();
-        List<String> filter = FileUtils.readAsList(STORAGE_PATH);
-        FORUMS.parallelStream().forEach(f -> {
+        FORUMS.stream().forEach(f -> {
             Document doc;
             try {
                 doc = Jsoup.connect(URL + f).get();
-                List<String> ids = doc.select(TBODY).stream().map(e -> e.attr(ID)).filter(e -> !e.isEmpty() && !filter.contains(e)).distinct().collect(Collectors.toList());
+                List<String> ids = doc.select(TBODY).stream()
+                        .map(e -> e.attr(ID))
+                        .filter(e -> {
+                            try {
+                                return !references.isReferenceStored(e, PRODUCER_ID);
+                            } catch (SQLException ex) {
+                                ex.printStackTrace();
+                                return false;
+                            }
+                        })
+                        .collect(Collectors.toList());
+                
                 ids.forEach(id -> {
                     doc.select(String.format(POST_REF, id)).stream().filter(s -> s.text().contains(ROM)).distinct().forEach(s -> {
                         TGMessage m = new TGMessage(MessageType.TEXT);
@@ -53,7 +67,11 @@ public class MiuiProducer implements MessageProducer {
                             ret.add(m);
                         }
                     });
-                    FileUtils.write(id, STORAGE_PATH);
+                    try {
+                        references.storeReference(id, PRODUCER_ID);
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
+                    }
                 });
             } catch (IOException ex) {
                 ex.printStackTrace();

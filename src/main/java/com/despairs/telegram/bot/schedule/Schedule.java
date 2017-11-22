@@ -6,12 +6,16 @@
 package com.despairs.telegram.bot.schedule;
 
 import com.despairs.telegram.bot.TGMessageSender;
+import com.despairs.telegram.bot.db.repo.SettingsRepository;
+import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
+import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.model.TGMessage;
 import com.despairs.telegram.bot.producer.MessageProducer;
 import com.despairs.telegram.bot.producer.MiuiProducer;
 import com.despairs.telegram.bot.producer.NewXboxOneProducer;
 import com.despairs.telegram.bot.producer.RedmineIssueProducer;
 import com.despairs.telegram.bot.producer.VkWallpostProducer;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -25,18 +29,20 @@ import org.telegram.telegrambots.api.objects.Message;
  */
 public class Schedule implements Runnable {
 
+     private final SettingsRepository settings = SettingsRepositoryImpl.getInstance();
+    
     private final TGMessageSender sender;
     private final String chatId;
 
     private final List<MessageProducer> producers = new ArrayList<>();
 
-    public Schedule(TGMessageSender sender, String chatId) {
+    public Schedule(TGMessageSender sender) throws SQLException {
         this.sender = sender;
-        this.chatId = chatId;
+        this.chatId = settings.getValueV(Settings.DEFAULT_CHANNEL_ID);
         registerProducers();
     }
 
-    private void registerProducers() {
+    private void registerProducers() throws SQLException {
         producers.add(new NewXboxOneProducer());
         producers.add(new MiuiProducer());
         producers.add(new VkWallpostProducer("elistratov"));
@@ -53,7 +59,7 @@ public class Schedule implements Runnable {
                 if (!messages.isEmpty()) {
                     System.out.println(date + String.format(": Got %d messages from producer %s", messages.size(), producer.getClass().getSimpleName()));
                     Map<TGMessage, Integer> sendedMessages = new HashMap<>();
-                    messages.forEach(m -> {
+                    messages.parallelStream().forEach(m -> {
                         Integer replyTo = null;
                         if (m.getRef() != null) {
                             replyTo = sendedMessages.get(m.getRef());

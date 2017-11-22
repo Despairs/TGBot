@@ -1,0 +1,58 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package com.despairs.telegram.bot.db.repo.impl;
+
+import com.despairs.telegram.bot.db.repo.ProcessedReferenceRepository;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
+import javax.sql.rowset.CachedRowSet;
+
+/**
+ *
+ * @author EKovtunenko
+ */
+public class ProcessedReferenceRepositoryImpl extends AbstractRepository implements ProcessedReferenceRepository {
+
+    private static final String INSERT_SQL = "insert into processed_reference(producer, reference) values (:producer, :reference)";
+    private static final String EXISTS_SQL = "select 1 from processed_reference where producer = :producer and reference = :reference";
+    private static final String LAST_REFERENCE_SQL = "select reference from processed_reference where producer = :producer order by id, timestamp desc limit 1";
+
+    private static final ProcessedReferenceRepository instance = new ProcessedReferenceRepositoryImpl();
+
+    public static ProcessedReferenceRepository getInstance() {
+        return instance;
+    }
+
+    @Override
+    public void storeReference(String ref, String producer) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("producer", producer);
+        variables.put("reference", ref);
+        insertOrUpdate(INSERT_SQL, variables);
+    }
+
+    @Override
+    public boolean isReferenceStored(String ref, String producer) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("producer", producer);
+        variables.put("reference", ref);
+        CachedRowSet rs = select(EXISTS_SQL, variables);
+        return rs.size() > 0;
+    }
+
+    @Override
+    public String getLastReference(String producer) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("producer", producer);
+        CachedRowSet rs = select(LAST_REFERENCE_SQL, variables);
+        if (rs.next()) {
+            return rs.getString("reference");
+        }
+        return null;
+    }
+
+}
