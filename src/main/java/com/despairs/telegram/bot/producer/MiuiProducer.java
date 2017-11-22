@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.select.Elements;
 
 /**
  *
@@ -50,7 +49,9 @@ public class MiuiProducer implements MessageProducer {
                         TGMessage m = new TGMessage(MessageType.TEXT);
                         m.setText(s.text());
                         m.setLink(URL + s.attr(HREF));
-                        ret.add(m);
+                        if (!ret.contains(m)) {
+                            ret.add(m);
+                        }
                     });
                     FileUtils.write(id, STORAGE_PATH);
                 });
