@@ -22,7 +22,7 @@ public class DBTest {
         assertEquals("val", SettingsRepositoryImpl.getInstance().getValueV("TEST"));
 
 //        assertFalse(ProcessedReferenceRepositoryImpl.getInstance().isReferenceStored("100500", "TEST_PRODUCER"));
-        ProcessedReferenceRepositoryImpl.getInstance().storeReference("100500", "TEST_PRODUCER");
+        ProcessedReferenceRepositoryImpl.getInstance().createReference("100500", "TEST_PRODUCER");
         assertTrue(ProcessedReferenceRepositoryImpl.getInstance().isReferenceStored("100500", "TEST_PRODUCER"));
 
 //        assertFalse(UserRepositoryImpl.getInstance().isUserRegistered("123"));

@@ -34,17 +34,21 @@ public class AbstractRepository {
     }
 
     protected boolean insertOrUpdate(String sql, Map<String, Object> variables) throws SQLException {
-        try (NamedVariablesStatement stmt = new NamedVariablesStatement(sql, variables, getConnection())) {
-            int executedCount = stmt.executeUpdate();
-            return executedCount > 0;
+        try (Connection connection = getConnection()) {
+            try (NamedVariablesStatement stmt = new NamedVariablesStatement(sql, variables, connection)) {
+                int executedCount = stmt.executeUpdate();
+                return executedCount > 0;
+            }
         }
     }
 
     protected CachedRowSet select(String sql, Map<String, Object> variables) throws SQLException {
-        try (NamedVariablesStatement stmt = new NamedVariablesStatement(sql, variables, getConnection())) {
-            CachedRowSet rs = new CachedRowSetImpl();
-            rs.populate(stmt.executeQuery());
-            return rs;
+        try (Connection connection = getConnection()) {
+            try (NamedVariablesStatement stmt = new NamedVariablesStatement(sql, variables, connection)) {
+                CachedRowSet rs = new CachedRowSetImpl();
+                rs.populate(stmt.executeQuery());
+                return rs;
+            }
         }
     }
 

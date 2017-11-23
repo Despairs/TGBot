@@ -13,7 +13,9 @@ import java.sql.SQLException;
  */
 public interface ProcessedReferenceRepository {
 
-    void storeReference(String ref, String producer) throws SQLException;
+    void createReference(String ref, String producer) throws SQLException;
+    
+    void updateReference(String oldRef, String newRef, String producer) throws SQLException;
 
     boolean isReferenceStored(String ref, String producer) throws SQLException;
     

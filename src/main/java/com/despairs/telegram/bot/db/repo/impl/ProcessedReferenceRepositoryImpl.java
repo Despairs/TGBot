@@ -18,6 +18,7 @@ import javax.sql.rowset.CachedRowSet;
 public class ProcessedReferenceRepositoryImpl extends AbstractRepository implements ProcessedReferenceRepository {
 
     private static final String INSERT_SQL = "insert into processed_reference(producer, reference) values (:producer, :reference)";
+    private static final String UPDATE_SQL = "update processed_reference set reference = :new_reference, timestamp = now() where producer = :producer and reference = :old_reference";
     private static final String EXISTS_SQL = "select 1 from processed_reference where producer = :producer and reference = :reference";
     private static final String LAST_REFERENCE_SQL = "select reference from processed_reference where producer = :producer order by id, timestamp desc limit 1";
 
@@ -28,7 +29,7 @@ public class ProcessedReferenceRepositoryImpl extends AbstractRepository impleme
     }
 
     @Override
-    public void storeReference(String ref, String producer) throws SQLException {
+    public void createReference(String ref, String producer) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("producer", producer);
         variables.put("reference", ref);
@@ -53,6 +54,15 @@ public class ProcessedReferenceRepositoryImpl extends AbstractRepository impleme
             return rs.getString("reference");
         }
         return null;
+    }
+
+    @Override
+    public void updateReference(String oldRef, String newRef, String producer) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("producer", producer);
+        variables.put("old_reference", oldRef);
+        variables.put("new_reference", newRef);
+        insertOrUpdate(UPDATE_SQL, variables);
     }
 
 }

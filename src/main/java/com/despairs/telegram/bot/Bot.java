@@ -15,6 +15,10 @@ import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
 import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.utils.MessageBuilder;
 import com.despairs.telegram.bot.model.TGMessage;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
 import java.sql.SQLException;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
@@ -73,7 +77,20 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
             PartialBotApiMethod<Message> msg = MessageBuilder.build(message, chatId, replyTo);
             switch (message.getType()) {
                 case DOCUMENT:
-                    ret = sendDocument((SendDocument) msg);
+                    URL docUrl = new URL(message.getLink());
+                    HttpURLConnection connection = null;
+                    try {
+                        connection = (HttpURLConnection) docUrl.openConnection();
+                        connection.connect();
+                        try (InputStream is = connection.getInputStream()) {
+                            ((SendDocument) msg).setNewDocument(String.valueOf(System.currentTimeMillis()), is);
+                            ret = sendDocument((SendDocument) msg);
+                        }
+                    } finally {
+                        if (connection != null) {
+                            connection.disconnect();
+                        }
+                    }
                     break;
                 case PHOTO:
                     ret = sendPhoto((SendPhoto) msg);

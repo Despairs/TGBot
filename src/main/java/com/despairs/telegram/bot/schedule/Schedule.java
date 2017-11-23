@@ -59,7 +59,7 @@ public class Schedule implements Runnable {
                 if (!messages.isEmpty()) {
                     System.out.println(date + String.format(": Got %d messages from producer %s", messages.size(), producer.getClass().getSimpleName()));
                     Map<TGMessage, Integer> sendedMessages = new HashMap<>();
-                    messages.parallelStream().forEach(m -> {
+                    messages.forEach(m -> {
                         Integer replyTo = null;
                         if (m.getRef() != null) {
                             replyTo = sendedMessages.get(m.getRef());

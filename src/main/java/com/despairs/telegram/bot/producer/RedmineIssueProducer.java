@@ -35,7 +35,7 @@ import org.apache.http.impl.client.HttpClients;
  */
 public class RedmineIssueProducer implements MessageProducer {
 
-    private static final String PRODUCER_ID = "REDMINE";
+    private static final String PRODUCER_ID = "REDMINE_%s";
 
     private static final String MESSAGE_PATTERN = "<b>Заголовок</b>: <pre>%s</pre>\n"
             + "<b>Автор</b>: <pre>%s</pre>\n"
@@ -81,7 +81,7 @@ public class RedmineIssueProducer implements MessageProducer {
                 issues.stream()
                         .filter(issue -> {
                             try {
-                                return !references.isReferenceStored(String.valueOf(issue.getId()), PRODUCER_ID);
+                                return !references.isReferenceStored(String.valueOf(issue.getId()), String.format(PRODUCER_ID, user));
                             } catch (SQLException ex) {
                                 ex.printStackTrace();
                                 return false;
@@ -95,7 +95,7 @@ public class RedmineIssueProducer implements MessageProducer {
                             m.setChatId(channelId);
                             ret.add(m);
                             try {
-                                references.storeReference(String.valueOf(_issue.getId()), PRODUCER_ID);
+                                references.createReference(String.valueOf(_issue.getId()), String.format(PRODUCER_ID, user));
                             } catch (SQLException ex) {
                                 ex.printStackTrace();
                             }

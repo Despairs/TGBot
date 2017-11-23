@@ -58,7 +58,7 @@ public class NewXboxOneProducer implements MessageProducer {
                 ret.add(m);
             });
             try {
-                references.storeReference(id, PRODUCER_ID);
+                references.createReference(id, PRODUCER_ID);
             } catch (SQLException ex) {
                 ex.printStackTrace();
             }

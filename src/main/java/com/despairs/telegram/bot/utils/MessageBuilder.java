@@ -65,21 +65,11 @@ public class MessageBuilder {
     }
 
     private static SendDocument createDocumentMessage(TGMessage message, String chatId, Integer replyTo) {
-        try {
-            URL docUrl = new URL(message.getLink());
-            URLConnection connection = docUrl.openConnection();
-            try (InputStream is = connection.getInputStream()) {
-                return new SendDocument()
-                        .setChatId(chatId)
-                        .setReplyMarkup(message.getKeyboard())
-                        .setReplyToMessageId(replyTo)
-                        .setNewDocument(String.valueOf(System.currentTimeMillis()), is)
-                        .setCaption(message.getText());
-            }
-        } catch (IOException ex) {
-            ex.fillInStackTrace();
-        }
-        return null;
+        return new SendDocument()
+                .setChatId(chatId)
+                .setReplyMarkup(message.getKeyboard())
+                .setReplyToMessageId(replyTo)
+                .setCaption(message.getText());
     }
 
 }

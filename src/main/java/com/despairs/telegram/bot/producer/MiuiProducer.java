@@ -49,8 +49,8 @@ public class MiuiProducer implements MessageProducer {
                 List<String> ids = doc.select(TBODY).stream()
                         .map(e -> e.attr(ID))
                         .filter(e -> {
-                            try {
-                                return !references.isReferenceStored(e, PRODUCER_ID);
+                            try {                              
+                                return !e.isEmpty() && !references.isReferenceStored(e, PRODUCER_ID);
                             } catch (SQLException ex) {
                                 ex.printStackTrace();
                                 return false;
@@ -68,7 +68,7 @@ public class MiuiProducer implements MessageProducer {
                         }
                     });
                     try {
-                        references.storeReference(id, PRODUCER_ID);
+                        references.createReference(id, PRODUCER_ID);
                     } catch (SQLException ex) {
                         ex.printStackTrace();
                     }

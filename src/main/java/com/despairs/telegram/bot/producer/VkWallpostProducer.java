@@ -73,7 +73,11 @@ public class VkWallpostProducer implements MessageProducer {
                         ret.addAll(convertWallpost(post));
                     }
                 });
-                references.storeReference(String.valueOf(currentCount), producerId);
+                if (lastReference == null) {
+                    references.createReference(String.valueOf(currentCount), producerId);
+                } else {
+                    references.updateReference(lastReference, String.valueOf(currentCount), producerId);
+                }
             }
         }
         return ret;
