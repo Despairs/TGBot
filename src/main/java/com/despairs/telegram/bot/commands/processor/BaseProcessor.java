@@ -5,9 +5,9 @@
  */
 package com.despairs.telegram.bot.commands.processor;
 
-import com.despairs.telegram.bot.commands.processor.CommandProcessor;
 import com.despairs.telegram.bot.TGMessageSender;
 import com.despairs.telegram.bot.commands.Command;
+import com.despairs.telegram.bot.commands.impl.RegisterRedmineUserCommand;
 import com.despairs.telegram.bot.commands.registry.CommandRegistry;
 import com.despairs.telegram.bot.keyboard.CommandKeyboard;
 import com.despairs.telegram.bot.model.TGMessage;

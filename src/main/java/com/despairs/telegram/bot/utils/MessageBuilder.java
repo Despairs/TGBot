@@ -6,10 +6,6 @@
 package com.despairs.telegram.bot.utils;
 
 import com.despairs.telegram.bot.model.TGMessage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;

@@ -7,6 +7,7 @@ package com.despairs.telegram.bot;
 
 import com.despairs.telegram.bot.model.TGMessage;
 import org.telegram.telegrambots.api.objects.Message;
+import org.telegram.telegrambots.api.methods.BotApiMethod;
 
 /**
  *
@@ -21,4 +22,6 @@ public interface TGMessageSender {
     Message sendTGMessage(TGMessage message, Long chatId, Integer replyTo);
 
     Message sendTGMessage(TGMessage message, String chatId, Integer replyTo);
+    
+    void executeMethod(BotApiMethod method);
 }
