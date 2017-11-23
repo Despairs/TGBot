@@ -10,8 +10,16 @@ import com.despairs.telegram.bot.commands.impl.KfcCommand;
 import com.despairs.telegram.bot.commands.processor.CommandProcessor;
 import com.despairs.telegram.bot.commands.processor.CommandProcessorFactory;
 import com.despairs.telegram.bot.commands.registry.CommandRegistry;
+import com.despairs.telegram.bot.db.repo.SettingsRepository;
+import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
+import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.utils.MessageBuilder;
 import com.despairs.telegram.bot.model.TGMessage;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLConnection;
+import java.sql.SQLException;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
 import org.telegram.telegrambots.api.methods.send.SendMessage;
@@ -26,12 +34,14 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
  */
 public class Bot extends TelegramLongPollingBot implements TGMessageSender {
 
-    private static final String BOT_NAME = "DespairsMiscBot";
+    private final SettingsRepository settings = SettingsRepositoryImpl.getInstance();
 
     private final String token;
+    private final String botName;
 
-    public Bot(String token) {
-        this.token = token;
+    public Bot() throws SQLException {
+        token = settings.getValueV(Settings.BOT_TOKEN);
+        botName = settings.getValueV(Settings.BOT_NAME);
         CommandRegistry.getInstance().registerCommand("Burger King", new BurgerKingCommand());
         CommandRegistry.getInstance().registerCommand("KFC", new KfcCommand());
     }
@@ -67,7 +77,20 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
             PartialBotApiMethod<Message> msg = MessageBuilder.build(message, chatId, replyTo);
             switch (message.getType()) {
                 case DOCUMENT:
-                    ret = sendDocument((SendDocument) msg);
+                    URL docUrl = new URL(message.getLink());
+                    HttpURLConnection connection = null;
+                    try {
+                        connection = (HttpURLConnection) docUrl.openConnection();
+                        connection.connect();
+                        try (InputStream is = connection.getInputStream()) {
+                            ((SendDocument) msg).setNewDocument(String.valueOf(System.currentTimeMillis()), is);
+                            ret = sendDocument((SendDocument) msg);
+                        }
+                    } finally {
+                        if (connection != null) {
+                            connection.disconnect();
+                        }
+                    }
                     break;
                 case PHOTO:
                     ret = sendPhoto((SendPhoto) msg);
@@ -90,6 +113,6 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
 
     @Override
     public String getBotUsername() {
-        return BOT_NAME;
+        return botName;
     }
 }

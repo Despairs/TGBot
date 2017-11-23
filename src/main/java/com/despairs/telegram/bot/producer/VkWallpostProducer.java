@@ -5,8 +5,12 @@
  */
 package com.despairs.telegram.bot.producer;
 
-import com.despairs.telegram.bot.utils.FileUtils;
+import com.despairs.telegram.bot.db.repo.ProcessedReferenceRepository;
+import com.despairs.telegram.bot.db.repo.SettingsRepository;
+import com.despairs.telegram.bot.db.repo.impl.ProcessedReferenceRepositoryImpl;
+import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
 import com.despairs.telegram.bot.model.MessageType;
+import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.model.TGMessage;
 import com.vk.api.sdk.client.VkApiClient;
 import com.vk.api.sdk.client.actors.UserActor;
@@ -16,6 +20,7 @@ import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.wall.Wallpost;
 import com.vk.api.sdk.objects.wall.responses.GetResponse;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,8 +30,8 @@ import java.util.List;
  */
 public class VkWallpostProducer implements MessageProducer {
 
-    private static final String FILENAME_STORAGE_PATTERN = "VKWallpostCount_%s.txt";
-    private static final String FILENAME_CFG_PATTERN = "VKToken.cfg";
+    private final String producerId;
+
     private static final String VIDEO_LINK_PATTERN = "https://vk.com/video%d_%d";
 
     private final VkApiClient vk = new VkApiClient(new HttpTransportClient());
@@ -34,10 +39,13 @@ public class VkWallpostProducer implements MessageProducer {
     private final String person;
     private final UserActor actor;
 
-    public VkWallpostProducer(String person) {
+    private final SettingsRepository settings = SettingsRepositoryImpl.getInstance();
+    private final ProcessedReferenceRepository references = ProcessedReferenceRepositoryImpl.getInstance();
+
+    public VkWallpostProducer(String person) throws SQLException {
         this.person = person;
-        List<String> lines = FileUtils.readAsList(FILENAME_CFG_PATTERN);
-        actor = new UserActor(Integer.parseInt(lines.get(0)), lines.get(1));
+        producerId = "VK_" + person;
+        actor = new UserActor(settings.getValueN(Settings.VK_USER_ID).intValue(), settings.getValueV(Settings.VK_TOKEN));
     }
 
     @Override
@@ -50,9 +58,9 @@ public class VkWallpostProducer implements MessageProducer {
             isPinned = lastPost.getItems().get(0).getIsPinned();
         }
         int lastPostNumber = 0;
-        String s = FileUtils.read(String.format(FILENAME_STORAGE_PATTERN, person));
-        if (!s.isEmpty()) {
-            lastPostNumber = Integer.parseInt(s);
+        String lastReference = references.getLastReference(producerId);
+        if (lastReference != null && !lastReference.isEmpty()) {
+            lastPostNumber = Integer.parseInt(lastReference);
         }
         int count = currentCount - lastPostNumber;
         if (count > 0) {
@@ -65,7 +73,11 @@ public class VkWallpostProducer implements MessageProducer {
                         ret.addAll(convertWallpost(post));
                     }
                 });
-                FileUtils.write(String.valueOf(currentCount), String.format(FILENAME_STORAGE_PATTERN, person), false);
+                if (lastReference == null) {
+                    references.createReference(String.valueOf(currentCount), producerId);
+                } else {
+                    references.updateReference(lastReference, String.valueOf(currentCount), producerId);
+                }
             }
         }
         return ret;

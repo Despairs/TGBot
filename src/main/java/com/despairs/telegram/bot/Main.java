@@ -8,6 +8,7 @@ package com.despairs.telegram.bot;
 import com.despairs.telegram.bot.schedule.Schedule;
 import com.despairs.telegram.bot.schedule.ScheduleRegistry;
 import com.despairs.telegram.bot.utils.FileUtils;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -21,25 +22,16 @@ import org.telegram.telegrambots.exceptions.TelegramApiException;
  */
 public class Main {
 
-    private static final String CFG = "bot.cfg";
-
-    public static void main(String[] args) {
-
-        ApiContextInitializer.init();
-
-        TelegramBotsApi botsApi = new TelegramBotsApi();
-        Bot bot;
-
-        List<String> cfg = FileUtils.readAsList(CFG);
+    public static void main(String[] args) throws SQLException {
         try {
-            String token = cfg.get(0);
-            bot = new Bot(token);
+            ApiContextInitializer.init();
+            TelegramBotsApi botsApi = new TelegramBotsApi();
+            Bot bot = new Bot();
             botsApi.registerBot(bot);
-            String channelId = cfg.get(1);
-            Schedule schedule = new Schedule(bot, channelId);
+            Schedule schedule = new Schedule(bot);
             ScheduleRegistry.getInstance().add(schedule);
             Executors.newScheduledThreadPool(1).scheduleAtFixedRate(schedule, 0, 10, TimeUnit.MINUTES);
-        } catch (TelegramApiException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
