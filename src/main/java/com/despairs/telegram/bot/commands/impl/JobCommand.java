@@ -33,8 +33,8 @@ public class JobCommand implements Command {
             + "Список списаний времени по проекту: <pre>/job get [%project%]</pre>\n\n"
             + "Суммарная статистика списаний времени по проекту: <pre>/job getStat [%project%]</pre>\n\n"
             + "Суммарная статистика списаний времени по проекту с группировкой по дням: <pre>/job getStatByDay [%project%]</pre>\n\n"
-            + "<b>[%project%]</b> - опциональный параметр. Без указания будет выведена информация по всем проектам."
-            + "<b>[%date%]</b> - опциональный параметр. Без указания будет использоваться SYSDATE";
+            + "<b>[%project%]</b> - опциональный параметр. Без указания будет выведена информация по всем проектам\n"
+            + "<b>[%date%]</b> - опциональный параметр. Без указания будет использоваться SYSDATE\n";
     private static final String UNKNOWN_COMMAND = "Неизвестная команда: %s";
     private static final String ENTRY_PUTTED = "%s добавил %.2f ч. в проект %s";
     private static final String ENTRY_PUTTED_WITH_DATE = "%s добавил %.2f ч. в проект %s за %s";
