@@ -42,7 +42,7 @@ public class InlineCallbackQueryProcessor extends BaseProcessor {
         try {
             String callbackMessage = callback.getData();
             if (callbackMessage.startsWith("assign_redmine_issue")) {
-                User user = users.getUser(callback.getFrom().getId().toString());
+                User user = users.getUser(callback.getFrom().getId());
                 if (user == null) {
                     TGMessage needRegisterMessage = new TGMessage(MessageType.TEXT);
                     needRegisterMessage.setText("Чтобы взять задачу в работу, необходимо зарегистрировать свой RedmineUserId, отправив боту комманду '/redmine@DespairsTestBot %d', где %d - ваш RedmineUserId (https://redminehost/users/%d))");

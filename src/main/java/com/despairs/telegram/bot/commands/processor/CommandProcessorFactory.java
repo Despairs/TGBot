@@ -28,7 +28,7 @@ public class CommandProcessorFactory {
         } else if (update.getChannelPost() != null) {
             ret = new ChannelProcessor(update);
         } else if (message != null) {
-            if (message.isGroupMessage() && message.isCommand()) {
+            if ((message.isGroupMessage() || message.isSuperGroupMessage()) && message.isCommand()) {
                 ret = new GroupCommandMessageProcessor(update);
             } else {
                 ret = new PersonalMessageProcessor(update);

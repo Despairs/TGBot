@@ -18,9 +18,12 @@ import com.despairs.telegram.bot.db.repo.UserRepository;
  */
 public class UserRepositoryImpl extends AbstractRepository implements UserRepository {
 
-    private static final String INSERT_SQL = "insert into bot_users(\"redmineId\", id, name) "
+    private static final String INSERT_SQL_REDMINE = "insert into bot_users(\"redmineId\", id, name) "
             + "values (:redmineId, :id, :name)";
+        private static final String INSERT_SQL = "insert into bot_users(id, name) "
+            + "values (:id, :name)";
     private static final String EXISTS_SQL = "select 1 from bot_users where id = :id";
+    private static final String EXISTS_REDMINE_SQL = "select 1 from bot_users where \"redmineId\" = :redmineId";
     private static final String GET_USER_SQL = "select * from bot_users where id = :id";
 
     private static final UserRepository instance = new UserRepositoryImpl();
@@ -30,16 +33,24 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
     }
 
     @Override
-    public void registerUser(String id, String name, String redmineId) throws SQLException {
-        Map<String, Object> variables = new HashMap<>();
+    public void registerUser(Integer id, String name) throws SQLException {
+                Map<String, Object> variables = new HashMap<>();
         variables.put("id", id);
         variables.put("name", name);
-        variables.put("redmineId", redmineId);
         insertOrUpdate(INSERT_SQL, variables);
     }
 
     @Override
-    public boolean isUserRegistered(String id) throws SQLException {
+    public void registerUser(Integer id, String name, String redmineId) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("id", id);
+        variables.put("name", name);
+        variables.put("redmineId", redmineId);
+        insertOrUpdate(INSERT_SQL_REDMINE, variables);
+    }
+
+    @Override
+    public boolean isUserRegistered(Integer id) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("id", id);
         CachedRowSet rs = select(EXISTS_SQL, variables);
@@ -47,7 +58,15 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
     }
 
     @Override
-    public User getUser(String id) throws SQLException {
+    public boolean isRedmineUserRegistered(String redmineUserId) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("redmineId", redmineUserId);
+        CachedRowSet rs = select(EXISTS_REDMINE_SQL, variables);
+        return rs.size() > 0;
+    }
+
+    @Override
+    public User getUser(Integer id) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("id", id);
         CachedRowSet rs = select(GET_USER_SQL, variables);

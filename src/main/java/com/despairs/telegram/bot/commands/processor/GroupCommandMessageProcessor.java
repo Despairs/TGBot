@@ -6,6 +6,7 @@
 package com.despairs.telegram.bot.commands.processor;
 
 import com.despairs.telegram.bot.commands.Command;
+import com.despairs.telegram.bot.commands.impl.JobCommand;
 import com.despairs.telegram.bot.commands.impl.RegisterRedmineUserCommand;
 import com.despairs.telegram.bot.commands.registry.CommandRegistry;
 import com.despairs.telegram.bot.model.TGMessage;
@@ -25,8 +26,11 @@ public class GroupCommandMessageProcessor extends BaseProcessor {
     @Override
     public void process() {
         Command command = null;
-        if (message.getText().startsWith("/redmine")) {
+        String commandText = message.getText();
+        if (commandText.startsWith("/redmine")) {
             command = new RegisterRedmineUserCommand();
+        } else if (commandText.startsWith("/job")) {
+            command = new JobCommand();
         }
         if (command != null) {
             List<TGMessage> result = command.invoke(message);
