@@ -34,7 +34,7 @@ public class JobCommand implements Command {
             + "Суммарная статистика списаний времени по проекту: <pre>/job getStat [%project%]</pre>\n\n"
             + "Суммарная статистика списаний времени по проекту с группировкой по дням: <pre>/job getStatByDay [%project%]</pre>\n\n"
             + "<b>[%project%]</b> - опциональный параметр. Без указания будет выведена информация по всем проектам\n"
-            + "<b>[%date%]</b> - опциональный параметр. Без указания будет использоваться SYSDATE\n";
+            + "<b>[%date%]</b> - опциональный параметр. Без указания будет использоваться SYSDATE. <b>Формат даты: yyyy-MM-dd</b>\n";
     private static final String UNKNOWN_COMMAND = "Неизвестная команда: %s";
     private static final String ENTRY_PUTTED = "%s добавил %.2f ч. в проект %s";
     private static final String ENTRY_PUTTED_WITH_DATE = "%s добавил %.2f ч. в проект %s за %s";
@@ -70,11 +70,11 @@ public class JobCommand implements Command {
                 users.registerUser(userId, name);
             }
 
-            String messageText = null;
+            String messageText = "";
             String command = splittedCommand[1];
             String project = splittedCommand.length > 2 ? splittedCommand[2] : null;
-            switch (command) {
-                case "put":
+            switch (command.toUpperCase()) {
+                case "PUT":
                     Double timeEntry = Double.parseDouble(splittedCommand[3]);
                     String timestamp = splittedCommand.length > 4 ? splittedCommand[4] : null;
                     if (timestamp == null) {
@@ -85,21 +85,24 @@ public class JobCommand implements Command {
                         messageText = String.format(ENTRY_PUTTED_WITH_DATE, name, timeEntry, project, timestamp);
                     }                   
                     break;
-                case "get": {
+                case "GET": {
                     List<JobEntry> entries = project == null ? jobs.getEntries(userId) : jobs.getEntries(userId, project);
                     messageText = buildEntriesMessage(entries);
                     break;
                 }
-                case "getStat": {
+                case "GETSTAT": {
                     List<JobEntry> entries = project == null ? jobs.getEntries(userId) : jobs.getEntries(userId, project);
                     messageText = buildStatisticMessage(entries);
                     break;
                 }
-                case "getStatByDay": {
+                case "GETSTATBYDAY": {
                     List<JobEntry> entries = project == null ? jobs.getEntries(userId) : jobs.getEntries(userId, project);
                     messageText = buildStatisticByDayMessage(entries);
                     break;
                 }
+                case "HELP": 
+                    msg.setText(USAGE_TEXT);
+                    break;
                 default:
                     messageText = String.format(UNKNOWN_COMMAND, command);
                     break;
