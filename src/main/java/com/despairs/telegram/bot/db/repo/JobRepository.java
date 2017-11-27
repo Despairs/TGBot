@@ -7,6 +7,7 @@ package com.despairs.telegram.bot.db.repo;
 
 import com.despairs.telegram.bot.model.JobEntry;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -15,9 +16,9 @@ import java.util.List;
  */
 public interface JobRepository {
 
-    void createEntry(Integer userId, String project, String action) throws SQLException;
-
     void createEntry(Integer userId, String project, Double duration) throws SQLException;
+    
+    void createEntry(Integer userId, String project, Double duration, Date timestamp) throws SQLException;
 
     List<JobEntry> getEntries(Integer userId) throws SQLException;
 

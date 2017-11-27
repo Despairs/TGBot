@@ -14,6 +14,7 @@ import com.despairs.telegram.bot.model.JobEntry;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.ParseMode;
 import com.despairs.telegram.bot.model.TGMessage;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,15 +27,17 @@ import org.telegram.telegrambots.api.objects.Message;
  */
 public class JobCommand implements Command {
 
-    private static final String USAGE_TEXT = "<b>Использование:</b> <pre>job %command% %project% %time_entry%</pre>\n\n"
+    private static final String USAGE_TEXT = "<b>Использование:</b> <pre>/job %command% %project% %time_entry%</pre>\n\n"
             + "<b>Доступные команды:</b>\n"
-            + "Фиксация времени по проекту: <pre>job put %project% %time_entry%</pre>\n\n"
-            + "Список списаний времени по проекту: <pre>job get [%project%]</pre>\n\n"
-            + "Суммарная статистика списаний времени по проекту: <pre>job getStat [%project%]</pre>\n\n"
-            + "Суммарная статистика списаний времени по проекту с группировкой по дням: <pre>job getStatByDay [%project%]</pre>\n\n"      
-            + "<b>[%project%]</b> - опциональный параметр. Без указания будет выведена информация по всем проектам.";
+            + "Фиксация времени по проекту: <pre>/job put %project% %time_entry% [%date%]</pre>\n\n"
+            + "Список списаний времени по проекту: <pre>/job get [%project%]</pre>\n\n"
+            + "Суммарная статистика списаний времени по проекту: <pre>/job getStat [%project%]</pre>\n\n"
+            + "Суммарная статистика списаний времени по проекту с группировкой по дням: <pre>/job getStatByDay [%project%]</pre>\n\n"
+            + "<b>[%project%]</b> - опциональный параметр. Без указания будет выведена информация по всем проектам."
+            + "<b>[%date%]</b> - опциональный параметр. Без указания будет использоваться SYSDATE";
     private static final String UNKNOWN_COMMAND = "Неизвестная команда: %s";
     private static final String ENTRY_PUTTED = "%s добавил %.2f ч. в проект %s";
+    private static final String ENTRY_PUTTED_WITH_DATE = "%s добавил %.2f ч. в проект %s за %s";
 
     private static final String ENTRIES_TITLE_MESSAGES = "<b>Проект</b>: <pre>%s</pre>\n";
     private static final String ENTRIES_TABLE_HEADER_MESSAGES = "<b>Дата</b>\t|\t<b>Часы</b>\n";
@@ -54,7 +57,7 @@ public class JobCommand implements Command {
         String[] splittedCommand = message.getText().split(" ");
 
         // Валидация аргументов
-        if (splittedCommand.length < 2 || splittedCommand.length > 4) {
+        if (splittedCommand.length < 2 || splittedCommand.length > 5) {
             msg.setText(USAGE_TEXT);
             return ret;
         }
@@ -73,8 +76,14 @@ public class JobCommand implements Command {
             switch (command) {
                 case "put":
                     Double timeEntry = Double.parseDouble(splittedCommand[3]);
-                    jobs.createEntry(userId, project, timeEntry);
-                    messageText = String.format(ENTRY_PUTTED, name, timeEntry, project);
+                    String timestamp = splittedCommand.length > 4 ? splittedCommand[4] : null;
+                    if (timestamp == null) {
+                        jobs.createEntry(userId, project, timeEntry);
+                        messageText = String.format(ENTRY_PUTTED, name, timeEntry, project);
+                    } else {
+                        jobs.createEntry(userId, project, timeEntry, new SimpleDateFormat(JobEntry.DATE_PATTERN).parse(timestamp));
+                        messageText = String.format(ENTRY_PUTTED_WITH_DATE, name, timeEntry, project, timestamp);
+                    }                   
                     break;
                 case "get": {
                     List<JobEntry> entries = project == null ? jobs.getEntries(userId) : jobs.getEntries(userId, project);

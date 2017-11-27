@@ -15,7 +15,7 @@ import java.util.Objects;
  */
 public class JobEntry {
 
-    private static final String DATE_PATTERN = "yyyy-MM-dd";
+    public static final String DATE_PATTERN = "yyyy-MM-dd";
     
     private String project;
     private Double duration;

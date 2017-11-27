@@ -11,6 +11,7 @@ import com.despairs.telegram.bot.model.User;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,8 +25,8 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
 
     private static final String INSERT_SQL_DURATION = "insert into job(user_id, project, time_entry) "
             + "values (:user_id, :project, :time_entry)";
-    private static final String INSERT_SQL_ACTION = "insert into job(user_id, project, action) "
-            + "values (:user_id, :project, :action)";
+    private static final String INSERT_SQL_WITH_DATE = "insert into job(user_id, project, time_entry, timestamp) "
+            + "values (:user_id, :project, :time_entry, :timestamp)";
     private static final String SELECT_BY_PROJECT_AND_DAYS_SQL = "select * from job where user_id = :user_id and project = :project and timestamp > now() - (:daysAgo || ' days') :: INTERVAL";
     private static final String SELECT_BY_PROJECT_SQL = "select * from job where user_id = :user_id and project = :project";
     private static final String SELECT_ALL_SQL = "select * from job where user_id = :user_id";
@@ -38,13 +39,14 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
         return instance;
     }
 
-    @Override
-    public void createEntry(Integer userId, String project, String action) throws SQLException {
+        @Override
+    public void createEntry(Integer userId, String project, Double duration, Date timestamp) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("user_id", userId);
         variables.put("project", project);
-        variables.put("action", action);
-        insertOrUpdate(INSERT_SQL_ACTION, variables);
+        variables.put("time_entry", duration);
+        variables.put("timestamp", timestamp);
+        insertOrUpdate(INSERT_SQL_WITH_DATE, variables);
     }
 
     @Override

@@ -9,6 +9,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLType;
+import java.sql.Types;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,7 +69,11 @@ public class NamedVariablesStatement implements AutoCloseable {
     private void buildStatement(Connection connection) throws SQLException {
         statement = connection.prepareStatement(sql);
         for (Map.Entry<Integer, Object> entry : indexedVariables.entrySet()) {
+            if (entry.getValue() instanceof Date) {
+                statement.setObject(entry.getKey(), entry.getValue(), Types.DATE);
+            }else {
             statement.setObject(entry.getKey(), entry.getValue());
+            }
         }
     }
 
