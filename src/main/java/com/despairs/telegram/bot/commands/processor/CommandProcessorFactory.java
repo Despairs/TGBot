@@ -5,6 +5,7 @@
  */
 package com.despairs.telegram.bot.commands.processor;
 
+import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 
 /**
@@ -21,10 +22,17 @@ public class CommandProcessorFactory {
 
     public CommandProcessor create(Update update) {
         CommandProcessor ret = null;
-        if (update.getChannelPost() != null) {
+        Message message = update.getMessage();
+        if (update.hasCallbackQuery()) {
+            ret = new InlineCallbackQueryProcessor(update);
+        } else if (update.getChannelPost() != null) {
             ret = new ChannelProcessor(update);
-        } else if (update.getMessage() != null) {
-            ret = new PersonalMessageProcessor(update);
+        } else if (message != null) {
+            if (message.isGroupMessage() && message.isCommand()) {
+                ret = new GroupCommandMessageProcessor(update);
+            } else {
+                ret = new PersonalMessageProcessor(update);
+            }
         }
         if (ret == null) {
             throw new IllegalArgumentException("Can't detect processor for " + update);

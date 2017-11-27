@@ -9,11 +9,13 @@ import com.despairs.telegram.bot.db.repo.ProcessedReferenceRepository;
 import com.despairs.telegram.bot.db.repo.SettingsRepository;
 import com.despairs.telegram.bot.db.repo.impl.ProcessedReferenceRepositoryImpl;
 import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
+import com.despairs.telegram.bot.keyboard.RedmineIssueKeyboard;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.ParseMode;
 import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.model.TGMessage;
 import com.despairs.telegram.bot.utils.HttpsUtils;
+import com.despairs.telegram.bot.utils.RedmineUtils;
 import com.despairs.telegram.bot.utils.StringUtils;
 import com.taskadapter.redmineapi.IssueManager;
 import com.taskadapter.redmineapi.Params;
@@ -53,14 +55,12 @@ public class RedmineIssueProducer implements MessageProducer {
     private final String url;
     private final String issue_url;
     private final String channelId;
-    private final String apiKey;
     private final List<String> users;
 
     public RedmineIssueProducer() throws SQLException {
         url = settings.getValueV(Settings.REDMINE_HOST);
         issue_url = url + "issues/%d";
         channelId = settings.getValueV(Settings.REDMINE_CHANNEL_ID);
-        apiKey = settings.getValueV(Settings.REDMINE_API_KEY);
         users = Arrays.asList(settings.getValueV(Settings.REDMINE_ISSUES_ASSIGNED_TO_USERS).split(","));
     }
 
@@ -68,11 +68,7 @@ public class RedmineIssueProducer implements MessageProducer {
     public List<TGMessage> produce() throws Exception {
         List<TGMessage> ret = new ArrayList<>();
 
-        RedmineManager mgr = RedmineManagerFactory.
-                createWithApiKey(url, apiKey, HttpClients
-                        .custom()
-                        .setSSLSocketFactory(HttpsUtils.getSSLConnectionSocketFactory())
-                        .build());
+        RedmineManager mgr = RedmineUtils.getManager();
         IssueManager issueManager = mgr.getIssueManager();
         users.forEach(user -> {
             try {
@@ -93,6 +89,7 @@ public class RedmineIssueProducer implements MessageProducer {
                             m.setLink(String.format(issue_url, _issue.getId()));
                             m.setParseMode(ParseMode.HTML);
                             m.setChatId(channelId);
+                            m.setKeyboard(new RedmineIssueKeyboard(_issue.getId()));
                             ret.add(m);
                             try {
                                 references.createReference(String.valueOf(_issue.getId()), String.format(PRODUCER_ID, user));

@@ -52,7 +52,8 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
         variables.put("id", id);
         CachedRowSet rs = select(GET_USER_SQL, variables);
         if (!rs.next() || rs.size() == 0) {
-            throw new SQLException(String.format("User with id=%s not found", id));
+            System.out.println((String.format("User with id=%s not found", id)));
+            return null;
         }
         User user = new User();
         user.setId(id);
