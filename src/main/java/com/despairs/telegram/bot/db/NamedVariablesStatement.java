@@ -9,7 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.SQLType;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Date;
 import java.util.HashMap;
@@ -67,12 +67,12 @@ public class NamedVariablesStatement implements AutoCloseable {
     }
 
     private void buildStatement(Connection connection) throws SQLException {
-        statement = connection.prepareStatement(sql);
+        statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
         for (Map.Entry<Integer, Object> entry : indexedVariables.entrySet()) {
             if (entry.getValue() instanceof Date) {
                 statement.setObject(entry.getKey(), entry.getValue(), Types.DATE);
-            }else {
-            statement.setObject(entry.getKey(), entry.getValue());
+            } else {
+                statement.setObject(entry.getKey(), entry.getValue());
             }
         }
     }
@@ -83,6 +83,10 @@ public class NamedVariablesStatement implements AutoCloseable {
 
     public ResultSet executeQuery() throws SQLException {
         return statement.executeQuery();
+    }
+
+    public ResultSet getGeneratedKeys() throws SQLException {
+        return statement.getGeneratedKeys();
     }
 
     @Override

@@ -11,8 +11,6 @@ import com.despairs.telegram.bot.model.Settings;
 import com.taskadapter.redmineapi.RedmineManager;
 import com.taskadapter.redmineapi.RedmineManagerFactory;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
 import org.apache.http.impl.client.HttpClients;
 
 /**

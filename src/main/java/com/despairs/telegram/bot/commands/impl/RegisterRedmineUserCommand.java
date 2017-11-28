@@ -13,8 +13,6 @@ import com.despairs.telegram.bot.model.TGMessage;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.telegram.telegrambots.api.objects.Message;
 
 /**

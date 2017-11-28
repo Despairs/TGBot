@@ -8,7 +8,6 @@ package com.despairs.telegram.bot.commands.processor;
 import com.despairs.telegram.bot.commands.Command;
 import com.despairs.telegram.bot.commands.impl.JobCommand;
 import com.despairs.telegram.bot.commands.impl.RegisterRedmineUserCommand;
-import com.despairs.telegram.bot.commands.registry.CommandRegistry;
 import com.despairs.telegram.bot.model.TGMessage;
 import java.util.List;
 import org.telegram.telegrambots.api.objects.Update;

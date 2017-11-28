@@ -10,6 +10,7 @@ import com.despairs.telegram.bot.db.repo.JobRepository;
 import com.despairs.telegram.bot.db.repo.UserRepository;
 import com.despairs.telegram.bot.db.repo.impl.JobRepositoryImpl;
 import com.despairs.telegram.bot.db.repo.impl.UserRepositoryImpl;
+import com.despairs.telegram.bot.keyboard.JobEditEntryKeyboard;
 import com.despairs.telegram.bot.model.JobEntry;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.ParseMode;
@@ -17,6 +18,7 @@ import com.despairs.telegram.bot.model.TGMessage;
 import com.despairs.telegram.bot.utils.StringUtils;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -32,17 +34,25 @@ public class JobCommand implements Command {
     private static final String USAGE_TEXT = "<b>Использование:</b> <pre>/job %command% %project% %time_entry%</pre>\n\n"
             + "<b>Доступные команды:</b>\n"
             + "Фиксация времени по проекту: <pre>/job put %project% %time_entry% [-D%date%] [-C\"%ANY FREE FORMATTED DATA%\"]</pre>\n\n"
+            + "Изменение записи: <pre>/job edit %id% [-H%hours%] [-D%date%] [-C\"%ANY FREE FORMATTED DATA%\"]</pre>\n\n"
             + "Удаление записи: <pre>/job remove %id%</pre>\n\n"
-            + "Список списаний времени по проекту: <pre>/job get [%project%]</pre>\n\n"
+            + "Список списаний времени по проекту: <pre>/job get [-ID%id%] [%project%]</pre>\n\n"
             + "Суммарная статистика списаний времени по проекту: <pre>/job getStat [%project%]</pre>\n\n"
             + "Суммарная статистика списаний времени по проекту с группировкой по дням: <pre>/job getStatByDay [%project%]</pre>\n\n"
             + "<b>[%project%]</b> - опциональный параметр. Без указания будет выведена информация по всем проектам\n"
+            + "<b>[-ID%id%]</b> - опциональный параметр. При указании поиск будет осуществляться только по заданному ID\n"
+            + "<b>[-H%hours%]</b> - опциональный параметр. Используется только для изменения записи\n"
             + "<b>[-D%date%]</b> - опциональный параметр. Без указания будет использоваться SYSDATE. <b>Формат даты: yyyy-MM-dd</b>\n"
             + "<b>[-C\"%comment%\"]</b> - опциональный параметр. Обязательно использование кавычек\n";
+
     private static final String UNKNOWN_COMMAND = "Неизвестная команда: %s";
-    private static final String ENTRY_PUTTED = "%s добавил %.2f ч. в проект %s";
-    private static final String ENTRY_PUTTED_WITH_DATE = "%s добавил %.2f ч. в проект %s за %s";
-    private static final String ENTRY_DELETED = "%s удалил запись с ID=%d";
+
+    private static final String ENTRY_PUTTED = "<b>%s</b> добавил %.2f ч. в проект %s. <b>ID</b> = %d";
+    private static final String ENTRY_PUTTED_WITH_DATE = "<b>%s</b> добавил %.2f ч. в проект %s за %s. <b>ID</b> = %d";
+    private static final String ENTRY_DELETED = "<b>%s</b> удалил запись с <b>ID</b> = %d";
+    private static final String ENTRY_UPDATED = "<b>%s</b> обновил запись с <b>ID</b> = %d";
+
+    private static final String ENTRY_NOT_FOUND = "Запись с <b>ID</b> = %d не найдена";
 
     private static final String ENTRIES_TITLE_MESSAGES = "<b>Проект</b>: <pre>%s</pre>\n";
     private static final String ENTRIES_TABLE_HEADER_MESSAGES = "<b>Дата</b>\t|\t<b>Часы</b>\n";
@@ -63,7 +73,7 @@ public class JobCommand implements Command {
         msg.setParseMode(ParseMode.HTML);
         ret.add(msg);
 
-        String _message = message.getText().replace("  ", " ");        
+        String _message = message.getText().replace("  ", " ");
         String[] splittedCommand = _message.split(" ");
 
         // Валидация аргументов
@@ -80,31 +90,49 @@ public class JobCommand implements Command {
                 users.registerUser(userId, name);
             }
 
-            String messageText = "";
             String command = splittedCommand[1];
             String project = splittedCommand.length > 2 ? splittedCommand[2] : null;
+            Date timestamp = null;
+            String date = StringUtils.extractByRegExp(_message, "-D(\\d{4}-\\d{2}-\\d{2})");
+            if (date != null) {
+                timestamp = new SimpleDateFormat(JobEntry.DATE_PATTERN).parse(date);
+            }
+            String comment = StringUtils.extractByRegExp(_message, "-C\"(.*)\"");
+            Double editTimeEntry = null;
+            String duration = StringUtils.extractByRegExp(_message, "-H(\\d+)");
+            if (duration != null) {
+                editTimeEntry = Double.parseDouble(duration);
+            }
+            String messageText = "";
             switch (command.toUpperCase()) {
-                case "PUT":
+                case "PUT": {
                     Double timeEntry = Double.parseDouble(splittedCommand[3]);
-
-                    Date timestamp = null;
-                    String date = StringUtils.extractByRegExp(_message, "-D(\\d{4}-\\d{2}-\\d{2})");
-                    if (date != null) {
-                        timestamp = new SimpleDateFormat(JobEntry.DATE_PATTERN).parse(date);
-                    }
-                    
-                    String comment = StringUtils.extractByRegExp(_message, "-C\"(.*)\"");
+                    Long id = null;
                     if (timestamp == null) {
-                        jobs.create(userId, new JobEntry(project, timeEntry, comment));
-                        messageText = String.format(ENTRY_PUTTED, name, timeEntry, project);
+                        id = jobs.create(userId, new JobEntry(project, timeEntry, comment));
+                        messageText = String.format(ENTRY_PUTTED, name, timeEntry, project, id);
                     } else {
-                        jobs.create(userId, new JobEntry(project, timeEntry, comment, timestamp));
-                        messageText = String.format(ENTRY_PUTTED_WITH_DATE, name, timeEntry, project, date);
+                        id = jobs.create(userId, new JobEntry(project, timeEntry, comment, timestamp));
+                        messageText = String.format(ENTRY_PUTTED_WITH_DATE, name, timeEntry, project, date, id);
                     }
                     break;
+                }
                 case "GET": {
-                    List<JobEntry> entries = project == null ? jobs.list(userId) : jobs.list(userId, project);
-                    messageText = buildEntriesMessage(entries);
+                    String _id = StringUtils.extractByRegExp(_message, "-ID(\\d+)");
+                    Long id = _id != null ? Long.parseLong(_id) : null;
+                    List<JobEntry> entries = null;
+                    if (id == null) {
+                        entries = project == null ? jobs.list(userId) : jobs.list(userId, project);
+                    } else {
+                        JobEntry entry = jobs.get(userId, id);
+                        if (entry != null) {
+                            entries = Arrays.asList(entry);
+                        }
+                    }
+                    if (entries != null) {
+                        messageText = buildEntriesMessage(entries);
+                        msg.setKeyboard(new JobEditEntryKeyboard(entries));
+                    }
                     break;
                 }
                 case "GETSTAT": {
@@ -122,8 +150,18 @@ public class JobCommand implements Command {
                     if (id == null) {
                         msg.setText(USAGE_TEXT);
                     } else {
-                        jobs.delete(id);
-                        messageText = String.format(ENTRY_DELETED, name, id);
+                        boolean deleted = jobs.delete(userId, id);
+                        messageText = deleted ? String.format(ENTRY_DELETED, name, id) : String.format(ENTRY_NOT_FOUND, id);
+                    }
+                    break;
+                }
+                case "EDIT": {
+                    Long id = splittedCommand.length > 2 ? Long.parseLong(splittedCommand[2]) : null;
+                    if (id == null || (editTimeEntry == null && comment == null && timestamp == null)) {
+                        msg.setText(USAGE_TEXT);
+                    } else {
+                        boolean updated = jobs.update(userId, new JobEntry(id, editTimeEntry, comment, timestamp));
+                        messageText = updated ? String.format(ENTRY_UPDATED, name, id) : String.format(ENTRY_NOT_FOUND, id);
                     }
                     break;
                 }
@@ -137,7 +175,7 @@ public class JobCommand implements Command {
             msg.setText(messageText.isEmpty() ? "Записей не найдено" : messageText);
         } catch (Exception ex) {
             ex.printStackTrace();
-            msg.setText(ex.getMessage());
+            msg.setText(ex.getClass().getSimpleName() + "\t" + ex.getMessage());
         }
         return ret;
     }
@@ -173,6 +211,9 @@ public class JobCommand implements Command {
     }
 
     private String buildEntriesMessage(List<JobEntry> entries) {
+        if (entries == null || entries.isEmpty()) {
+            return null;
+        }
         StringBuilder sb = new StringBuilder();
         entries.stream().map(entry -> entry.getProject()).distinct().forEach(project -> {
             sb.append(String.format(ENTRIES_TITLE_MESSAGES, project));

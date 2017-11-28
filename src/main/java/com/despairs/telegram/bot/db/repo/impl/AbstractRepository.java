@@ -42,6 +42,17 @@ public class AbstractRepository {
         }
     }
 
+    protected CachedRowSet dmlWithGeneratedKeys(String sql, Map<String, Object> variables) throws SQLException {
+        try (Connection connection = getConnection()) {
+            try (NamedVariablesStatement stmt = new NamedVariablesStatement(sql, variables, connection)) {
+                stmt.executeUpdate();
+                CachedRowSet rs = new CachedRowSetImpl();
+                rs.populate(stmt.getGeneratedKeys());
+                return rs;
+            }
+        }
+    }
+
     protected CachedRowSet select(String sql, Map<String, Object> variables) throws SQLException {
         try (Connection connection = getConnection()) {
             try (NamedVariablesStatement stmt = new NamedVariablesStatement(sql, variables, connection)) {

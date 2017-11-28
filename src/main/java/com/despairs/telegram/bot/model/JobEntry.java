@@ -31,6 +31,13 @@ public class JobEntry {
         this.timestamp = timestamp;
     }
     
+    public JobEntry(Long id, Double duration, String comment, Date timestamp) {
+        this.id = id;
+        this.duration = duration;
+        this.comment = comment;
+        this.timestamp = timestamp;
+    }
+    
     public JobEntry(String project, Double duration, String comment, Date timestamp) {
         this.project = project;
         this.duration = duration;

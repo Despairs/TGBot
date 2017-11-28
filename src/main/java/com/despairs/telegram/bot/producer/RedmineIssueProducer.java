@@ -14,14 +14,12 @@ import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.ParseMode;
 import com.despairs.telegram.bot.model.Settings;
 import com.despairs.telegram.bot.model.TGMessage;
-import com.despairs.telegram.bot.utils.HttpsUtils;
 import com.despairs.telegram.bot.utils.RedmineUtils;
 import com.despairs.telegram.bot.utils.StringUtils;
 import com.taskadapter.redmineapi.IssueManager;
 import com.taskadapter.redmineapi.Params;
 import com.taskadapter.redmineapi.RedmineException;
 import com.taskadapter.redmineapi.RedmineManager;
-import com.taskadapter.redmineapi.RedmineManagerFactory;
 import com.taskadapter.redmineapi.bean.Issue;
 import com.taskadapter.redmineapi.internal.ResultsWrapper;
 import java.sql.SQLException;
@@ -29,7 +27,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import org.apache.http.impl.client.HttpClients;
 
 /**
  *

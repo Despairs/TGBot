@@ -7,7 +7,6 @@ package com.despairs.telegram.bot.db.repo;
 
 import com.despairs.telegram.bot.model.JobEntry;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.List;
 
 /**
@@ -16,12 +15,15 @@ import java.util.List;
  */
 public interface JobRepository {
 
-    void create(Integer userId, JobEntry entry) throws SQLException;
+    Long create(Integer userId, JobEntry entry) throws SQLException;
 
     List<JobEntry> list(Integer userId) throws SQLException;
+    
+    JobEntry get(Integer userId, Long id) throws SQLException;
 
     List<JobEntry> list(Integer userId, String project) throws SQLException;
-    
-    void delete(Long id) throws SQLException;
 
+    boolean delete(Integer userId, Long id) throws SQLException;
+
+    boolean update(Integer userId, JobEntry entry) throws SQLException;
 }

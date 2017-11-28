@@ -7,14 +7,11 @@ package com.despairs.telegram.bot;
 
 import com.despairs.telegram.bot.schedule.Schedule;
 import com.despairs.telegram.bot.schedule.ScheduleRegistry;
-import com.despairs.telegram.bot.utils.FileUtils;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.TelegramBotsApi;
-import org.telegram.telegrambots.exceptions.TelegramApiException;
 
 /**
  *

@@ -7,10 +7,8 @@ package com.despairs.telegram.bot.db.repo.impl;
 
 import com.despairs.telegram.bot.db.repo.JobRepository;
 import com.despairs.telegram.bot.model.JobEntry;
-import com.despairs.telegram.bot.model.User;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -31,9 +29,13 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
             + "values (:user_id, :project, :time_entry, :timestamp)";
     private static final String INSERT_WITH_DATE_AND_COMMENT = "insert into job(user_id, project, time_entry, timestamp, comment) "
             + "values (:user_id, :project, :time_entry, :timestamp, :comment)";
-    private static final String SELECT_BY_PROJECT_SQL = "select * from job where user_id = :user_id and project = :project order by timestamp desc";
+    
+    private static final String SELECT_ALL_BY_PROJECT_SQL = "select * from job where user_id = :user_id and project = :project order by timestamp desc";
     private static final String SELECT_ALL_SQL = "select * from job where user_id = :user_id order by timestamp desc";
-    private static final String DELETE = "delete from job where id = :id";
+    private static final String SELECT = "select * from job where user_id = :user_id and id = :id";
+    
+    private static final String DELETE = "delete from job where user_id = :user_id and id = :id";
+    private static final String UPDATE = "update job set %s where user_id = :user_id and id = :id";
 
     private static final JobRepository instance = new JobRepositoryImpl();
 
@@ -42,7 +44,7 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
     }
 
     @Override
-    public void create(Integer userId, JobEntry entry) throws SQLException {
+    public Long create(Integer userId, JobEntry entry) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("user_id", userId);
         variables.put("project", entry.getProject());
@@ -58,7 +60,11 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
             variables.put("comment", comment);
             sql = timestamp == null ? INSERT_WITH_COMMENT : INSERT_WITH_DATE_AND_COMMENT;
         }
-        dml(sql, variables);
+        CachedRowSet rs = dmlWithGeneratedKeys(sql, variables);
+        if (!rs.next()) {
+            throw new SQLException("Can't get generated entry id");
+        }
+        return rs.getLong(1);
     }
 
     @Override
@@ -78,7 +84,7 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
         Map<String, Object> variables = new HashMap<>();
         variables.put("user_id", userId);
         variables.put("project", project);
-        CachedRowSet rs = select(SELECT_BY_PROJECT_SQL, variables);
+        CachedRowSet rs = select(SELECT_ALL_BY_PROJECT_SQL, variables);
         List<JobEntry> ret = new ArrayList();
         while (rs.next()) {
             ret.add(new JobEntry(rs.getLong("id"), rs.getString("project"), rs.getDouble("time_entry"), rs.getString("comment"), rs.getDate("timestamp")));
@@ -87,10 +93,52 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
     }
 
     @Override
-    public void delete(Long id) throws SQLException {
+    public boolean delete(Integer userId, Long id) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
+        variables.put("user_id", userId);
         variables.put("id", id);
-        dml(DELETE, variables);
+        return dml(DELETE, variables);
+    }
+
+    @Override
+    public boolean update(Integer userId, JobEntry entry) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("user_id", userId);
+        variables.put("id", entry.getId());
+        StringBuilder sb = new StringBuilder();
+        String comment = entry.getComment();
+        if (comment != null) {
+            variables.put("comment", comment);
+            sb.append("comment = :comment, ");
+        }
+        Double duration = entry.getDuration();
+        if (duration != null) {
+            variables.put("time_entry", duration);
+            sb.append("time_entry = :time_entry, ");
+        }
+        Date timestamp = entry.getTimestamp();
+        if (timestamp != null) {
+            variables.put("timestamp", timestamp);
+            sb.append("timestamp = :timestamp, ");
+        }
+        int length = sb.length();
+        if (length != 0) {
+            sb.deleteCharAt(length - 2);
+        }
+        return dml(String.format(UPDATE, sb.toString()), variables);
+    }
+
+    @Override
+    public JobEntry get(Integer userId, Long id) throws SQLException {
+        JobEntry ret = null;
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("user_id", userId);
+        variables.put("id", id);
+        CachedRowSet rs = select(SELECT, variables);  
+        if (rs.next()) {
+            ret= new JobEntry(rs.getLong("id"), rs.getString("project"), rs.getDouble("time_entry"), rs.getString("comment"), rs.getDate("timestamp"));
+        }
+        return ret;
     }
 
 }

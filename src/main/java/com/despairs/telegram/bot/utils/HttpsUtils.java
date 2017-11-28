@@ -5,7 +5,6 @@
  */
 package com.despairs.telegram.bot.utils;
 
-import java.security.KeyManagementException;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSession;

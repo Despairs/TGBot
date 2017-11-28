@@ -5,9 +5,7 @@
  */
 package com.despairs.telegram.bot.commands.processor;
 
-import com.despairs.telegram.bot.db.repo.SettingsRepository;
 import com.despairs.telegram.bot.db.repo.UserRepository;
-import com.despairs.telegram.bot.db.repo.impl.SettingsRepositoryImpl;
 import com.despairs.telegram.bot.db.repo.impl.UserRepositoryImpl;
 import com.despairs.telegram.bot.keyboard.RedmineGotIssueKeyboard;
 import com.despairs.telegram.bot.model.MessageType;
