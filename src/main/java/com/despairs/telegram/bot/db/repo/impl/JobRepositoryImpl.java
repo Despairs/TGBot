@@ -23,107 +23,74 @@ import javax.sql.rowset.CachedRowSet;
  */
 public class JobRepositoryImpl extends AbstractRepository implements JobRepository {
 
-    private static final String INSERT_SQL_DURATION = "insert into job(user_id, project, time_entry) "
+    private static final String INSERT = "insert into job(user_id, project, time_entry) "
             + "values (:user_id, :project, :time_entry)";
-    private static final String INSERT_SQL_WITH_DATE = "insert into job(user_id, project, time_entry, timestamp) "
+    private static final String INSERT_WITH_COMMENT = "insert into job(user_id, project, time_entry, comment) "
+            + "values (:user_id, :project, :time_entry, :comment)";
+    private static final String INSERT_WITH_DATE = "insert into job(user_id, project, time_entry, timestamp) "
             + "values (:user_id, :project, :time_entry, :timestamp)";
-    private static final String SELECT_BY_PROJECT_AND_DAYS_SQL = "select * from job where user_id = :user_id and project = :project and timestamp > now() - (:daysAgo || ' days') :: INTERVAL";
-    private static final String SELECT_BY_PROJECT_SQL = "select * from job where user_id = :user_id and project = :project";
-    private static final String SELECT_ALL_SQL = "select * from job where user_id = :user_id";
-    private static final String SELECT_BY_DAYS_SQL = "select * from job where user_id = :user_id and timestamp > now() - (:daysAgo || ' days') :: INTERVAL";
-    
-    
+    private static final String INSERT_WITH_DATE_AND_COMMENT = "insert into job(user_id, project, time_entry, timestamp, comment) "
+            + "values (:user_id, :project, :time_entry, :timestamp, :comment)";
+    private static final String SELECT_BY_PROJECT_SQL = "select * from job where user_id = :user_id and project = :project order by timestamp desc";
+    private static final String SELECT_ALL_SQL = "select * from job where user_id = :user_id order by timestamp desc";
+    private static final String DELETE = "delete from job where id = :id";
+
     private static final JobRepository instance = new JobRepositoryImpl();
 
     public static JobRepository getInstance() {
         return instance;
     }
 
-        @Override
-    public void createEntry(Integer userId, String project, Double duration, Date timestamp) throws SQLException {
+    @Override
+    public void create(Integer userId, JobEntry entry) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("user_id", userId);
-        variables.put("project", project);
-        variables.put("time_entry", duration);
-        variables.put("timestamp", timestamp);
-        insertOrUpdate(INSERT_SQL_WITH_DATE, variables);
+        variables.put("project", entry.getProject());
+        variables.put("time_entry", entry.getDuration());
+        Date timestamp = entry.getTimestamp();
+        String sql = INSERT;
+        if (timestamp != null) {
+            variables.put("timestamp", timestamp);
+            sql = INSERT_WITH_DATE;
+        }
+        String comment = entry.getComment();
+        if (comment != null) {
+            variables.put("comment", comment);
+            sql = timestamp == null ? INSERT_WITH_COMMENT : INSERT_WITH_DATE_AND_COMMENT;
+        }
+        dml(sql, variables);
     }
 
     @Override
-    public void createEntry(Integer userId, String project, Double duration) throws SQLException {
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("user_id", userId);
-        variables.put("project", project);
-        variables.put("time_entry", duration);
-        insertOrUpdate(INSERT_SQL_DURATION, variables);
-    }
-
-    @Override
-    public List<JobEntry> getEntries(Integer userId) throws SQLException {
+    public List<JobEntry> list(Integer userId) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("user_id", userId);
         CachedRowSet rs = select(SELECT_ALL_SQL, variables);
         List<JobEntry> ret = new ArrayList();
         while (rs.next()) {
-            JobEntry entry = new JobEntry();
-            entry.setProject(rs.getString("project"));
-            entry.setDuration(rs.getDouble("time_entry"));
-            entry.setTimestamp(rs.getTimestamp("timestamp"));
-            ret.add(entry);
+            ret.add(new JobEntry(rs.getLong("id"), rs.getString("project"), rs.getDouble("time_entry"), rs.getString("comment"), rs.getDate("timestamp")));
         }
         return ret;
     }
 
     @Override
-    public List<JobEntry> getEntries(Integer userId, String project) throws SQLException {
+    public List<JobEntry> list(Integer userId, String project) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("user_id", userId);
         variables.put("project", project);
         CachedRowSet rs = select(SELECT_BY_PROJECT_SQL, variables);
         List<JobEntry> ret = new ArrayList();
         while (rs.next()) {
-            JobEntry entry = new JobEntry();
-            entry.setProject(rs.getString("project"));
-            entry.setDuration(rs.getDouble("time_entry"));
-            entry.setTimestamp(rs.getDate("timestamp"));
-            ret.add(entry);
+            ret.add(new JobEntry(rs.getLong("id"), rs.getString("project"), rs.getDouble("time_entry"), rs.getString("comment"), rs.getDate("timestamp")));
         }
         return ret;
     }
 
     @Override
-    public List<JobEntry> getEntries(Integer userId, String project, int daysAgo) throws SQLException {
+    public void delete(Long id) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
-        variables.put("user_id", userId);
-        variables.put("project", project);
-        variables.put("daysAgo", daysAgo);
-        CachedRowSet rs = select(SELECT_BY_PROJECT_AND_DAYS_SQL, variables);
-        List<JobEntry> ret = new ArrayList();
-        while (rs.next()) {
-            JobEntry entry = new JobEntry();
-            entry.setProject(rs.getString("project"));
-            entry.setDuration(rs.getDouble("time_entry"));
-            entry.setTimestamp(rs.getDate("timestamp"));
-            ret.add(entry);
-        }
-        return ret;
-    }
-
-    @Override
-    public List<JobEntry> getEntries(Integer userId, int daysAgo) throws SQLException {
-        Map<String, Object> variables = new HashMap<>();
-        variables.put("user_id", userId);
-        variables.put("daysAgo", daysAgo);
-        CachedRowSet rs = select(SELECT_BY_DAYS_SQL, variables);
-        List<JobEntry> ret = new ArrayList();
-        while (rs.next()) {
-            JobEntry entry = new JobEntry();
-            entry.setProject(rs.getString("project"));
-            entry.setDuration(rs.getDouble("time_entry"));
-            entry.setTimestamp(rs.getDate("timestamp"));
-            ret.add(entry);
-        }
-        return ret;
+        variables.put("id", id);
+        dml(DELETE, variables);
     }
 
 }

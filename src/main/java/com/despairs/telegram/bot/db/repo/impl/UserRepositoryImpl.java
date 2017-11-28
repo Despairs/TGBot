@@ -37,7 +37,7 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
                 Map<String, Object> variables = new HashMap<>();
         variables.put("id", id);
         variables.put("name", name);
-        insertOrUpdate(INSERT_SQL, variables);
+        dml(INSERT_SQL, variables);
     }
 
     @Override
@@ -46,7 +46,7 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
         variables.put("id", id);
         variables.put("name", name);
         variables.put("redmineId", redmineId);
-        insertOrUpdate(INSERT_SQL_REDMINE, variables);
+        dml(INSERT_SQL_REDMINE, variables);
     }
 
     @Override

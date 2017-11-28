@@ -33,7 +33,7 @@ public class AbstractRepository {
         return DriverManager.getConnection(URL, USER, PASS);
     }
 
-    protected boolean insertOrUpdate(String sql, Map<String, Object> variables) throws SQLException {
+    protected boolean dml(String sql, Map<String, Object> variables) throws SQLException {
         try (Connection connection = getConnection()) {
             try (NamedVariablesStatement stmt = new NamedVariablesStatement(sql, variables, connection)) {
                 int executedCount = stmt.executeUpdate();

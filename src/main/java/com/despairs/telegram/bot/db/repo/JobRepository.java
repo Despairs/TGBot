@@ -16,16 +16,12 @@ import java.util.List;
  */
 public interface JobRepository {
 
-    void createEntry(Integer userId, String project, Double duration) throws SQLException;
+    void create(Integer userId, JobEntry entry) throws SQLException;
+
+    List<JobEntry> list(Integer userId) throws SQLException;
+
+    List<JobEntry> list(Integer userId, String project) throws SQLException;
     
-    void createEntry(Integer userId, String project, Double duration, Date timestamp) throws SQLException;
-
-    List<JobEntry> getEntries(Integer userId) throws SQLException;
-
-    List<JobEntry> getEntries(Integer userId, String project) throws SQLException;
-
-    List<JobEntry> getEntries(Integer userId, int daysAgo) throws SQLException;
-
-    List<JobEntry> getEntries(Integer userId, String project, int daysAgo) throws SQLException;
+    void delete(Long id) throws SQLException;
 
 }

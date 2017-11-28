@@ -33,7 +33,7 @@ public class ProcessedReferenceRepositoryImpl extends AbstractRepository impleme
         Map<String, Object> variables = new HashMap<>();
         variables.put("producer", producer);
         variables.put("reference", ref);
-        insertOrUpdate(INSERT_SQL, variables);
+        dml(INSERT_SQL, variables);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ProcessedReferenceRepositoryImpl extends AbstractRepository impleme
         variables.put("producer", producer);
         variables.put("old_reference", oldRef);
         variables.put("new_reference", newRef);
-        insertOrUpdate(UPDATE_SQL, variables);
+        dml(UPDATE_SQL, variables);
     }
 
 }
