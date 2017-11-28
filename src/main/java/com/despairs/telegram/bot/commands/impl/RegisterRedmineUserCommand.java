@@ -32,10 +32,10 @@ public class RegisterRedmineUserCommand implements Command {
         String[] split = message.getText().split(" ");
         String text = "Пользователь успешно зарегистрирован";
         try {
-            if (users.isUserRegistered(split[1])) {
+            if (users.isRedmineUserRegistered(split[1])) {
                 text = "Пользователь уже зарегистрирован";
             } else {
-                users.registerUser(String.valueOf(message.getFrom().getId()), message.getFrom().getUserName(), split[1]);
+                users.registerUser(message.getFrom().getId(), message.getFrom().getUserName(), split[1]);
             }
             msg.setText(text);
         } catch (SQLException ex) {

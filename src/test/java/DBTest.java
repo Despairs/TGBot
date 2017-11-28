@@ -26,7 +26,7 @@ public class DBTest {
         assertTrue(ProcessedReferenceRepositoryImpl.getInstance().isReferenceStored("100500", "TEST_PRODUCER"));
 
 //        assertFalse(UserRepositoryImpl.getInstance().isUserRegistered("123"));
-        String id = String.valueOf(new Random().nextInt());
+        Integer id = new Random().nextInt();
         UserRepositoryImpl.getInstance().registerUser(id, "test", "redmineId");
         assertTrue(UserRepositoryImpl.getInstance().isUserRegistered(id));
         System.out.println(UserRepositoryImpl.getInstance().getUser(id));

@@ -48,7 +48,6 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
         botName = settings.getValueV(Settings.BOT_NAME);
         CommandRegistry.getInstance().registerCommand("Burger King", new BurgerKingCommand());
         CommandRegistry.getInstance().registerCommand("KFC", new KfcCommand());
-        CommandRegistry.getInstance().registerCommand("Redmine %d", new KfcCommand());
     }
 
     @Override

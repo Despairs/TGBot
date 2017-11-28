@@ -13,8 +13,8 @@ import java.util.Objects;
  */
 public class User {
 
+    private Integer id;
     private String name;
-    private String id;
     private String redmineId;
 
     public String getName() {
@@ -25,11 +25,11 @@ public class User {
         this.name = name;
     }
 
-    public String getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
