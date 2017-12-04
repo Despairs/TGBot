@@ -6,6 +6,7 @@
 package com.despairs.telegram.bot.commands.processor;
 
 import com.despairs.telegram.bot.TGMessageSender;
+import com.despairs.telegram.bot.model.User;
 
 /**
  *
@@ -16,4 +17,6 @@ public interface CommandProcessor {
     void process();
 
     CommandProcessor bindSender(TGMessageSender sender);
+    
+    CommandProcessor bindUser(User user);
 }

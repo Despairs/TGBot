@@ -9,13 +9,17 @@ import com.despairs.telegram.bot.commands.Command;
 import com.despairs.telegram.bot.commands.impl.StartCommand;
 import com.despairs.telegram.bot.commands.impl.UnknownCommand;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  *
  * @author EKovtunenko
  */
 public class CommandRegistry {
+
+    private String botUserName;
 
     private static final Map<String, Command> commands = new HashMap<>();
     private final UnknownCommand unknownCommand = new UnknownCommand();
@@ -30,14 +34,28 @@ public class CommandRegistry {
         return instance;
     }
 
+    public void setBotUserName(String botUserName) {
+        this.botUserName = String.format("@%s ", botUserName);
+    }
+
     public void registerCommand(String name, Command command) {
         commands.put(name, command);
     }
 
     public Command getCommand(String name) {
+        if (name.contains(botUserName)) {
+            name = name.replace(botUserName, "");
+        }
         Command command = commands.get(name);
         if (command == null) {
-            command = unknownCommand;
+            final String _name = name;
+            List<String> foundedAliases = commands.keySet().stream().filter(commandAlias -> _name.startsWith(commandAlias)).collect(Collectors.toList());
+            if (foundedAliases.size() == 1) {
+                String alias = foundedAliases.get(0);
+                command = commands.get(alias);
+            } else {
+                command = unknownCommand;
+            }
         }
         return command;
     }

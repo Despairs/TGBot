@@ -46,7 +46,7 @@ public class MessageBuilder {
         return new SendMessage()
                 .setChatId(chatId)
                 .setReplyMarkup(message.getKeyboard())
-                .setReplyToMessageId(replyTo)
+                .setReplyToMessageId(replyTo == null ? message.getReplyTo() : replyTo)
                 .setParseMode(message.getParseMode() != null ? message.getParseMode().name() : null)
                 .setText(msg);
     }

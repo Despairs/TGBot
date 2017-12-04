@@ -21,6 +21,7 @@ public class TGMessage {
     private ReplyKeyboard keyboard;
     private ParseMode parseMode;
     private String chatId;
+    private Integer replyTo;
 
     public TGMessage(MessageType type) {
         this.type = type;
@@ -82,21 +83,25 @@ public class TGMessage {
         this.chatId = chatId;
     }
 
-    @Override
-    public String toString() {
-        return "TGMessage{" + "link=" + link + ", text=" + text + ", type=" + type + ", ref=" + ref + ", keyboard=" + keyboard + ", parseMode=" + parseMode + ", chatId=" + chatId + '}';
+    public Integer getReplyTo() {
+        return replyTo;
+    }
+
+    public void setReplyTo(Integer replyTo) {
+        this.replyTo = replyTo;
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 47 * hash + Objects.hashCode(this.link);
-        hash = 47 * hash + Objects.hashCode(this.text);
-        hash = 47 * hash + Objects.hashCode(this.type);
-        hash = 47 * hash + Objects.hashCode(this.ref);
-        hash = 47 * hash + Objects.hashCode(this.keyboard);
-        hash = 47 * hash + Objects.hashCode(this.parseMode);
-        hash = 47 * hash + Objects.hashCode(this.chatId);
+        int hash = 5;
+        hash = 23 * hash + Objects.hashCode(this.link);
+        hash = 23 * hash + Objects.hashCode(this.text);
+        hash = 23 * hash + Objects.hashCode(this.type);
+        hash = 23 * hash + Objects.hashCode(this.ref);
+        hash = 23 * hash + Objects.hashCode(this.keyboard);
+        hash = 23 * hash + Objects.hashCode(this.parseMode);
+        hash = 23 * hash + Objects.hashCode(this.chatId);
+        hash = 23 * hash + Objects.hashCode(this.replyTo);
         return hash;
     }
 
@@ -133,7 +138,15 @@ public class TGMessage {
         if (this.parseMode != other.parseMode) {
             return false;
         }
+        if (!Objects.equals(this.replyTo, other.replyTo)) {
+            return false;
+        }
         return true;
+    }
+
+    @Override
+    public String toString() {
+        return "TGMessage{" + "link=" + link + ", text=" + text + ", type=" + type + ", ref=" + ref + ", keyboard=" + keyboard + ", parseMode=" + parseMode + ", chatId=" + chatId + ", replyTo=" + replyTo + '}';
     }
 
 }

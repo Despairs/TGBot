@@ -18,12 +18,12 @@ import com.despairs.telegram.bot.db.repo.UserRepository;
  */
 public class UserRepositoryImpl extends AbstractRepository implements UserRepository {
 
-    private static final String INSERT_SQL_REDMINE = "insert into bot_users(\"redmineId\", id, name) "
-            + "values (:redmineId, :id, :name)";
+    private static final String INSERT_SQL_REDMINE = "insert into bot_users(\"redmine_id\", id, name) "
+            + "values (:redmine_id, :id, :name)";
         private static final String INSERT_SQL = "insert into bot_users(id, name) "
             + "values (:id, :name)";
     private static final String EXISTS_SQL = "select 1 from bot_users where id = :id";
-    private static final String EXISTS_REDMINE_SQL = "select 1 from bot_users where \"redmineId\" = :redmineId";
+    private static final String EXISTS_REDMINE_SQL = "select 1 from bot_users where \"redmine_id\" = :redmine_id";
     private static final String GET_USER_SQL = "select * from bot_users where id = :id";
 
     private static final UserRepository instance = new UserRepositoryImpl();
@@ -45,7 +45,7 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
         Map<String, Object> variables = new HashMap<>();
         variables.put("id", id);
         variables.put("name", name);
-        variables.put("redmineId", redmineId);
+        variables.put("redmine_id", redmineId);
         dml(INSERT_SQL_REDMINE, variables);
     }
 
@@ -60,7 +60,7 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
     @Override
     public boolean isRedmineUserRegistered(String redmineUserId) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
-        variables.put("redmineId", redmineUserId);
+        variables.put("redmine_id", redmineUserId);
         CachedRowSet rs = select(EXISTS_REDMINE_SQL, variables);
         return rs.size() > 0;
     }
@@ -77,7 +77,8 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
         User user = new User();
         user.setId(id);
         user.setName(rs.getString("name"));
-        user.setRedmineId(rs.getString("redmineId"));
+        user.setRedmineId(rs.getString("redmine_id"));
+        user.setIsAdmin(rs.getBoolean("is_admin"));
         return user;
     }
 
