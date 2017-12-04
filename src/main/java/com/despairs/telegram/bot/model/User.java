@@ -16,6 +16,7 @@ public class User {
     private Integer id;
     private String name;
     private String redmineId;
+    private boolean isAdmin;
 
     public String getName() {
         return name;
@@ -41,17 +42,26 @@ public class User {
         this.redmineId = redmineId;
     }
 
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public void setIsAdmin(boolean isAdmin) {
+        this.isAdmin = isAdmin;
+    }
+
     @Override
     public String toString() {
-        return "User{" + "name=" + name + ", id=" + id + ", redmineId=" + redmineId + '}';
+        return "User{" + "id=" + id + ", name=" + name + ", redmineId=" + redmineId + ", isAdmin=" + isAdmin + '}';
     }
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 43 * hash + Objects.hashCode(this.name);
-        hash = 43 * hash + Objects.hashCode(this.id);
-        hash = 43 * hash + Objects.hashCode(this.redmineId);
+        int hash = 7;
+        hash = 23 * hash + Objects.hashCode(this.id);
+        hash = 23 * hash + Objects.hashCode(this.name);
+        hash = 23 * hash + Objects.hashCode(this.redmineId);
+        hash = 23 * hash + (this.isAdmin ? 1 : 0);
         return hash;
     }
 
@@ -67,13 +77,16 @@ public class User {
             return false;
         }
         final User other = (User) obj;
+        if (this.isAdmin != other.isAdmin) {
+            return false;
+        }
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (!Objects.equals(this.id, other.id)) {
+        if (!Objects.equals(this.redmineId, other.redmineId)) {
             return false;
         }
-        if (!Objects.equals(this.redmineId, other.redmineId)) {
+        if (!Objects.equals(this.id, other.id)) {
             return false;
         }
         return true;

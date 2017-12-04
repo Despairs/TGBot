@@ -5,7 +5,8 @@
  */
 package com.despairs.telegram.bot.commands.impl;
 
-import com.despairs.telegram.bot.commands.VisibleCommand;
+import com.despairs.telegram.bot.commands.Command;
+import com.despairs.telegram.bot.commands.Visible;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.TGMessage;
 import com.despairs.telegram.bot.utils.HttpsUtils;
@@ -21,7 +22,8 @@ import org.telegram.telegrambots.api.objects.Message;
  *
  * @author EKovtunenko
  */
-public class BurgerKingCommand implements VisibleCommand {
+@Visible
+public class BurgerKingCommand implements Command {
 
     private static final String RESPONSE = "Текущие акции BurgerKing";
     private static final String URL = "https://burgerking.ru/";

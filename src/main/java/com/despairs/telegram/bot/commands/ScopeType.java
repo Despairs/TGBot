@@ -9,6 +9,6 @@ package com.despairs.telegram.bot.commands;
  *
  * @author EKovtunenko
  */
-public interface VisibleCommand extends Command {
-
+public enum ScopeType {
+    ALL, REGISTERED, ADMIN
 }
