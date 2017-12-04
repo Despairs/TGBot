@@ -48,14 +48,14 @@ public class SalaryActionCommand implements Command {
         msg.setReplyTo(message.getMessageId());
         ret.add(msg);
 
-        String msgText = "Без текста";
+        String msgText = null;
         try {
             String[] args = message.getText().split("#");
             String action = args[1];
             switch (action) {
                 case "INPUT": {
                     if (args.length < 4) {
-                        throw new Exception("Invalid arguments");
+                        throw new Exception("Invalid arguments: must be >= 4");
                     }
                     Double amount = Double.parseDouble(args[3]);
                     String period = args[2];
@@ -91,7 +91,7 @@ public class SalaryActionCommand implements Command {
             }
         } catch (Exception ex) {
             ex.printStackTrace();
-            msg.setText(ex.getClass().getSimpleName() + "\t" + ex.getMessage());
+            msgText = ex.getClass().getSimpleName() + ":\t" + ex.getMessage();
         }
 
         msg.setText(msgText == null ? "Записей не найдено" : msgText);
