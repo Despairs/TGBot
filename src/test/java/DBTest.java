@@ -27,7 +27,7 @@ public class DBTest {
 
 //        assertFalse(UserRepositoryImpl.getInstance().isUserRegistered("123"));
         Integer id = new Random().nextInt();
-        UserRepositoryImpl.getInstance().registerUser(id, "test", "redmineId");
+        UserRepositoryImpl.getInstance().updateRedmineId(id, "redmineId");
         assertTrue(UserRepositoryImpl.getInstance().isUserRegistered(id));
         System.out.println(UserRepositoryImpl.getInstance().getUser(id));
     }

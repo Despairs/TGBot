@@ -33,7 +33,7 @@ public class RegisterRedmineUserCommand implements Command {
             if (users.isRedmineUserRegistered(split[1])) {
                 text = "Пользователь уже зарегистрирован";
             } else {
-                users.registerUser(message.getFrom().getId(), message.getFrom().getUserName(), split[1]);
+                users.updateRedmineId(message.getFrom().getId(), split[1]);
             }
             msg.setText(text);
         } catch (SQLException ex) {

@@ -14,7 +14,7 @@ import java.sql.SQLException;
  */
 public interface UserRepository {
 
-    void registerUser(Integer id, String name, String redmineId) throws SQLException;
+    void updateRedmineId(Integer id, String redmineId) throws SQLException;
     
     void registerUser(Integer id, String name) throws SQLException;
 

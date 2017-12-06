@@ -18,8 +18,7 @@ import com.despairs.telegram.bot.db.repo.UserRepository;
  */
 public class UserRepositoryImpl extends AbstractRepository implements UserRepository {
 
-    private static final String INSERT_SQL_REDMINE = "insert into bot_users(\"redmine_id\", id, name) "
-            + "values (:redmine_id, :id, :name)";
+    private static final String UPDATE_SQL_REDMINE = "update bot_users set \"redmine_id\" = :redmineId where id = :id";
         private static final String INSERT_SQL = "insert into bot_users(id, name) "
             + "values (:id, :name)";
     private static final String EXISTS_SQL = "select 1 from bot_users where id = :id";
@@ -34,19 +33,18 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
 
     @Override
     public void registerUser(Integer id, String name) throws SQLException {
-                Map<String, Object> variables = new HashMap<>();
+        Map<String, Object> variables = new HashMap<>();
         variables.put("id", id);
         variables.put("name", name);
         dml(INSERT_SQL, variables);
     }
 
     @Override
-    public void registerUser(Integer id, String name, String redmineId) throws SQLException {
+    public void updateRedmineId(Integer id, String redmineId) throws SQLException {
         Map<String, Object> variables = new HashMap<>();
         variables.put("id", id);
-        variables.put("name", name);
         variables.put("redmine_id", redmineId);
-        dml(INSERT_SQL_REDMINE, variables);
+        dml(UPDATE_SQL_REDMINE, variables);
     }
 
     @Override
