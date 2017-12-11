@@ -5,6 +5,7 @@
  */
 package com.despairs.telegram.bot.keyboard;
 
+import com.despairs.telegram.bot.model.User;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;

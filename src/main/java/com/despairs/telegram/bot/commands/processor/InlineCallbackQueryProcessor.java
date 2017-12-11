@@ -5,19 +5,17 @@
  */
 package com.despairs.telegram.bot.commands.processor;
 
+import com.despairs.telegram.bot.commands.impl.JobInlineCommand;
 import com.despairs.telegram.bot.commands.impl.SalaryInlineCommand;
 import com.despairs.telegram.bot.db.repo.UserRepository;
 import com.despairs.telegram.bot.db.repo.impl.UserRepositoryImpl;
 import com.despairs.telegram.bot.keyboard.RedmineGotIssueKeyboard;
-import com.despairs.telegram.bot.keyboard.SalaryKeyboard;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.TGMessage;
-import com.despairs.telegram.bot.model.User;
 import com.despairs.telegram.bot.utils.RedmineUtils;
 import com.taskadapter.redmineapi.IssueManager;
 import com.taskadapter.redmineapi.RedmineManager;
 import com.taskadapter.redmineapi.bean.Issue;
-import java.sql.SQLException;
 import org.telegram.telegrambots.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.api.objects.CallbackQuery;
@@ -28,8 +26,6 @@ import org.telegram.telegrambots.api.objects.Update;
  * @author EKovtunenko
  */
 public class InlineCallbackQueryProcessor extends BaseProcessor {
-
-    private final UserRepository users = UserRepositoryImpl.getInstance();
 
     private final CallbackQuery callback;
 
@@ -46,7 +42,10 @@ public class InlineCallbackQueryProcessor extends BaseProcessor {
         try {
             if (callbackMessage.startsWith("SALARY#")) {
                 new SalaryInlineCommand(callback, sender).invoke(message);
-            } else if (callbackMessage.startsWith("assign_redmine_issue")) {
+            }
+            if (callbackMessage.startsWith("JOB#")) {
+                new JobInlineCommand(callback, sender, user).invoke(message);
+            }else if (callbackMessage.startsWith("assign_redmine_issue")) {
                 if (user.getRedmineId() == null) {
                     TGMessage needRegisterMessage = new TGMessage(MessageType.TEXT);
                     needRegisterMessage.setText("Чтобы взять задачу в работу, необходимо зарегистрировать свой RedmineUserId, отправив боту комманду '/redmine@DespairsTestBot %d', где %d - ваш RedmineUserId (https://redminehost/users/%d))");

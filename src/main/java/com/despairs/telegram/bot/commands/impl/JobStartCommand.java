@@ -9,10 +9,12 @@ import com.despairs.telegram.bot.commands.Command;
 import com.despairs.telegram.bot.commands.Scope;
 import com.despairs.telegram.bot.commands.ScopeType;
 import com.despairs.telegram.bot.commands.Visible;
+import com.despairs.telegram.bot.keyboard.JobKeyboard;
 import com.despairs.telegram.bot.keyboard.SalaryKeyboard;
 import com.despairs.telegram.bot.model.MessageType;
 import com.despairs.telegram.bot.model.ParseMode;
 import com.despairs.telegram.bot.model.TGMessage;
+import com.despairs.telegram.bot.model.User;
 import java.util.ArrayList;
 import java.util.List;
 import org.telegram.telegrambots.api.objects.Message;
@@ -22,8 +24,13 @@ import org.telegram.telegrambots.api.objects.Message;
  * @author EKovtunenko
  */
 @Visible
-@Scope(type = ScopeType.ADMIN)
-public class SalaryStartCommand implements Command {
+public class JobStartCommand implements Command {
+
+    private final User user;
+
+    public JobStartCommand(User user) {
+        this.user = user;
+    }
 
     @Override
     public List<TGMessage> invoke(Message message) {
@@ -31,8 +38,8 @@ public class SalaryStartCommand implements Command {
         TGMessage msg = new TGMessage(MessageType.TEXT);
         msg.setParseMode(ParseMode.HTML);
         ret.add(msg);
-        msg.setText("Salary Project Menu");
-        msg.setKeyboard(new SalaryKeyboard(SalaryKeyboard.MAIN));
+        msg.setText("Time Management Menu");
+        msg.setKeyboard(new JobKeyboard(SalaryKeyboard.MAIN, user));
         return ret;
     }
 

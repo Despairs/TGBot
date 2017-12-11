@@ -5,6 +5,7 @@
  */
 package com.despairs.telegram.bot.commands.registry;
 
+import com.despairs.telegram.bot.Bot;
 import com.despairs.telegram.bot.commands.Command;
 import com.despairs.telegram.bot.commands.impl.StartCommand;
 import com.despairs.telegram.bot.commands.impl.UnknownCommand;
@@ -19,8 +20,6 @@ import java.util.stream.Collectors;
  */
 public class CommandRegistry {
 
-    private String botUserName;
-
     private static final Map<String, Command> commands = new HashMap<>();
     private final UnknownCommand unknownCommand = new UnknownCommand();
 
@@ -34,17 +33,13 @@ public class CommandRegistry {
         return instance;
     }
 
-    public void setBotUserName(String botUserName) {
-        this.botUserName = String.format("@%s ", botUserName);
-    }
-
     public void registerCommand(String name, Command command) {
         commands.put(name, command);
     }
 
     public Command getCommand(String name) {
-        if (name.contains(botUserName)) {
-            name = name.replace(botUserName, "");
+        if (name.contains(Bot.BOT_USER_NAME)) {
+            name = name.replace(Bot.BOT_USER_NAME, "");
         }
         Command command = commands.get(name);
         if (command == null) {

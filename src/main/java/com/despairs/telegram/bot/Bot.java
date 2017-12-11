@@ -6,6 +6,7 @@
 package com.despairs.telegram.bot;
 
 import com.despairs.telegram.bot.commands.impl.BurgerKingCommand;
+import com.despairs.telegram.bot.commands.impl.JobActionCommand;
 import com.despairs.telegram.bot.commands.impl.KfcCommand;
 import com.despairs.telegram.bot.commands.impl.SalaryActionCommand;
 import com.despairs.telegram.bot.commands.impl.SalaryStartCommand;
@@ -23,8 +24,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.telegram.telegrambots.api.methods.BotApiMethod;
 import org.telegram.telegrambots.api.methods.PartialBotApiMethod;
 import org.telegram.telegrambots.api.methods.send.SendDocument;
@@ -49,12 +48,13 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
 
     private final String token;
     private final String botDisplayName;
+    public static String BOT_USER_NAME;
 
     public Bot() throws SQLException, TelegramApiException {
         token = settings.getValueV(Settings.BOT_TOKEN);
         botDisplayName = settings.getValueV(Settings.BOT_NAME);
 
-        registry.setBotUserName(getMe().getUserName());
+        BOT_USER_NAME = String.format("@%s ", getMe().getUserName());
 
         registry.registerCommand("Burger King", new BurgerKingCommand());
         registry.registerCommand("KFC", new KfcCommand());
@@ -65,9 +65,8 @@ public class Bot extends TelegramLongPollingBot implements TGMessageSender {
     @Override
     public void onUpdateReceived(Update update) {
         com.despairs.telegram.bot.model.User user = resolveUser(update);
-        Message message = update.getMessage();
-        if ((message != null && !message.isGroupMessage()) || message == null || message.isCommand()) {
-            CommandProcessor processor = CommandProcessorFactory.getInstance().create(update);
+        CommandProcessor processor = CommandProcessorFactory.getInstance().create(update);
+        if (processor != null) {
             processor.bindSender(this).bindUser(user).process();
         }
     }
