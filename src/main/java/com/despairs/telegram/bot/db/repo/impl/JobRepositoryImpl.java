@@ -29,11 +29,25 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
             + "values (:user_id, :project, :time_entry, :timestamp)";
     private static final String INSERT_WITH_DATE_AND_COMMENT = "insert into job(user_id, project, time_entry, timestamp, comment) "
             + "values (:user_id, :project, :time_entry, :timestamp, :comment)";
-    
+
     private static final String SELECT_ALL_BY_PROJECT_SQL = "select * from job where user_id = :user_id and project = :project order by timestamp desc";
     private static final String SELECT_ALL_SQL = "select * from job where user_id = :user_id order by timestamp desc";
+
+    private static final String SELECT_ALL_BY_PROJECT_FROM_LAST_PAYMENT = "SELECT j.* FROM job j "
+            + "LEFT OUTER JOIN job_payments jp ON jp.project = j.project "
+            + "WHERE j.user_id = :user_id AND j.project = :project "
+            + "AND (jp.last_payment_date IS NULL OR j.\"timestamp\" >= jp.last_payment_date) "
+            + "ORDER BY TIMESTAMP DESC";
+    private static final String SELECT_ALL_SQL_FROM_LAST_PAYMENT = "SELECT j.* FROM job j "
+            + "LEFT OUTER JOIN job_payments jp ON jp.project = j.project "
+            + "WHERE j.user_id = :user_id "
+            + "AND (jp.last_payment_date IS NULL OR j.timestamp >= jp.last_payment_date) "
+            + "ORDER BY TIMESTAMP DESC";
+
     private static final String SELECT = "select * from job where user_id = :user_id and id = :id";
-    
+
+    private static final String SELECT_USER_PROJECTS = "select distinct project from job where user_id = :user_id";
+
     private static final String DELETE = "delete from job where user_id = :user_id and id = :id";
     private static final String UPDATE = "update job set %s where user_id = :user_id and id = :id";
 
@@ -134,9 +148,49 @@ public class JobRepositoryImpl extends AbstractRepository implements JobReposito
         Map<String, Object> variables = new HashMap<>();
         variables.put("user_id", userId);
         variables.put("id", id);
-        CachedRowSet rs = select(SELECT, variables);  
+        CachedRowSet rs = select(SELECT, variables);
         if (rs.next()) {
-            ret= new JobEntry(rs.getLong("id"), rs.getString("project"), rs.getDouble("time_entry"), rs.getString("comment"), rs.getDate("timestamp"));
+            ret = new JobEntry(rs.getLong("id"), rs.getString("project"), rs.getDouble("time_entry"), rs.getString("comment"), rs.getDate("timestamp"));
+        }
+        return ret;
+    }
+
+    @Override
+    public Long setLastPaymentDate(String project) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Long setLastPaymentDate(String project, Date date) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Date getLastPaymentDate(String project) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public List<String> getProjects(Integer userId) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("user_id", userId);
+        CachedRowSet rs = select(SELECT_USER_PROJECTS, variables);
+        List<String> ret = new ArrayList();
+        while (rs.next()) {
+            ret.add(rs.getString("project"));
+        }
+        return ret;
+    }
+
+    @Override
+    public List<JobEntry> listFromLastPayment(Integer userId, String project) throws SQLException {
+        Map<String, Object> variables = new HashMap<>();
+        variables.put("user_id", userId);
+        variables.put("project", project);
+        CachedRowSet rs = select(SELECT_ALL_BY_PROJECT_FROM_LAST_PAYMENT, variables);
+        List<JobEntry> ret = new ArrayList();
+        while (rs.next()) {
+            ret.add(new JobEntry(rs.getLong("id"), rs.getString("project"), rs.getDouble("time_entry"), rs.getString("comment"), rs.getDate("timestamp")));
         }
         return ret;
     }
