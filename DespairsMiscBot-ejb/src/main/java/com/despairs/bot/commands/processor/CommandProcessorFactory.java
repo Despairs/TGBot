@@ -32,7 +32,7 @@ public class CommandProcessorFactory {
             message = update.getChannelPost();
         } else if (update.hasMessage()) {
             message = update.getMessage();
-            if (message != null && (message.isGroupMessage() || message.isSuperGroupMessage())) {
+            if (message.isGroupMessage() || message.isSuperGroupMessage()) {
                 processorClass = GroupCommandMessageProcessor.class;
             } else {
                 processorClass = BaseProcessor.class;
