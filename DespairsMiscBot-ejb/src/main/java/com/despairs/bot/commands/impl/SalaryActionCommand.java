@@ -23,7 +23,7 @@ import ru.iflex.commons.logging.Log4jLogger;
  *
  * @author EKovtunenko
  */
-@CommandCfg(scope = ScopeType.ADMIN)
+@CommandCfg(alias = "SALARY#", scope = ScopeType.ADMIN)
 public class SalaryActionCommand implements Command {
 
     private static final String ENTRY_PUTTED = "Добавлено за %s. <b>ID</b> = %d";
