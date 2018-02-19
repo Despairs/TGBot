@@ -12,6 +12,7 @@ import com.despairs.bot.db.repo.UserRepository;
 import com.despairs.bot.fork.TelegramLongPollingBot;
 import com.despairs.bot.model.Settings;
 import java.sql.SQLException;
+import java.util.logging.Level;
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -20,6 +21,7 @@ import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.Update;
 import org.telegram.telegrambots.api.objects.User;
+import org.telegram.telegrambots.exceptions.TelegramApiException;
 import ru.iflex.commons.logging.Log4jLogger;
 
 /**
@@ -30,7 +32,7 @@ import ru.iflex.commons.logging.Log4jLogger;
 public class Bot extends TelegramLongPollingBot {
 
     private Logger logger = Log4jLogger.getLogger(Bot.class);
-    
+
     @Inject
     private SettingsRepository settings;
     @Inject
@@ -40,14 +42,14 @@ public class Bot extends TelegramLongPollingBot {
 
     private String token;
     private String botDisplayName;
-    public static String BOT_USER_NAME;
+    public static String BOT_USER_NAME = "";
 
     @PostConstruct
     public void init() {
         try {
             token = settings.getValueV(Settings.BOT_TOKEN);
             botDisplayName = settings.getValueV(Settings.BOT_NAME);
-            BOT_USER_NAME = String.format("@%s ", getMe().getUserName());
+            registerBotName();
         } catch (Exception ex) {
             logger.error(ex);
         }
@@ -56,6 +58,9 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         logger.trace(update);
+        if (BOT_USER_NAME.isEmpty()) {
+            registerBotName();
+        }
         com.despairs.bot.model.User user = resolveUser(update);
         CommandProcessor processor = processorFactory.create(update);
         if (processor != null) {
@@ -96,6 +101,14 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return botDisplayName;
+    }
+
+    private void registerBotName() {
+        try {
+            BOT_USER_NAME = String.format("@%s ", getMe().getUserName());
+        } catch (TelegramApiException ex) {
+            logger.error(ex);
+        }
     }
 
 }

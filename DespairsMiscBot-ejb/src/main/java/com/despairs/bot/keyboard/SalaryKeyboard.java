@@ -5,36 +5,32 @@
  */
 package com.despairs.bot.keyboard;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
+import java.text.SimpleDateFormat;
+import java.util.*;
+
 /**
- *
  * @author EKovtunenko
  */
 public class SalaryKeyboard extends InlineKeyboardMarkup {
 
     private static final String PERIOD_PATTERN = "LLLL yyyy";
 
+    private static final int DEFAULT_DEEP = -1;
+
     public static final int MAIN = 0;
     public static final int INPUT = 1;
-    public static final int DELETE = 2;
     public static final int VIEW = 3;
     public static final int VIEW_ALL = 4;
     public static final int VIEW_AGGREGATION = 5;
-    public static final int HIDE = 8;
 
     private final int level;
 
-    private final List<InlineKeyboardButton> hide = Arrays.asList(new InlineKeyboardButton("Скрыть")
+    private final List<InlineKeyboardButton> hide = Collections.singletonList(new InlineKeyboardButton("Скрыть")
             .setCallbackData("SALARY#HIDE"));
-    private final List<InlineKeyboardButton> reset = Arrays.asList(new InlineKeyboardButton("На главную")
+    private final List<InlineKeyboardButton> reset = Collections.singletonList(new InlineKeyboardButton("На главную")
             .setCallbackData("SALARY#RESET"));
 
     public SalaryKeyboard(int level) {
@@ -56,10 +52,10 @@ public class SalaryKeyboard extends InlineKeyboardMarkup {
                 keyboard = buildViewKeyboard();
                 break;
             case VIEW_ALL:
-                keyboard = buildPeriodButtons("VIEW#ALL");
+                keyboard = buildPeriodButtons("VIEW#ALL", -6);
                 break;
             case VIEW_AGGREGATION:
-                keyboard = buildPeriodButtons("VIEW#AGGREGATION");
+                keyboard = buildPeriodButtons("VIEW#AGGREGATION", -6);
                 break;
         }
         setKeyboard(keyboard);
@@ -67,38 +63,42 @@ public class SalaryKeyboard extends InlineKeyboardMarkup {
 
     private List<List<InlineKeyboardButton>> buildMainKeyboard() {
         return Arrays.asList(
-                Arrays.asList(new InlineKeyboardButton("Ввод")
+                Collections.singletonList(new InlineKeyboardButton("Ввод")
                         .setCallbackData("SALARY#INPUT")),
-                Arrays.asList(new InlineKeyboardButton("Удаление")
+                Collections.singletonList(new InlineKeyboardButton("Удаление")
                         .setSwitchInlineQueryCurrentChat("SALARY#DELETE#")),
-                Arrays.asList(new InlineKeyboardButton("Просмотр")
+                Collections.singletonList(new InlineKeyboardButton("Просмотр")
                         .setCallbackData("SALARY#VIEW")),
                 hide);
     }
 
     private List<List<InlineKeyboardButton>> buildViewKeyboard() {
         return Arrays.asList(
-                Arrays.asList(new InlineKeyboardButton("Все вхождения")
+                Collections.singletonList(new InlineKeyboardButton("Все вхождения")
                         .setCallbackData("SALARY#VIEW#ALL")),
-                Arrays.asList(new InlineKeyboardButton("Аггрегация")
+                Collections.singletonList(new InlineKeyboardButton("Аггрегация")
                         .setCallbackData("SALARY#VIEW#AGGREGATION")),
                 reset);
     }
 
     private List<List<InlineKeyboardButton>> buildPeriodButtons(String action) {
+        return buildPeriodButtons(action, DEFAULT_DEEP);
+    }
+
+    private List<List<InlineKeyboardButton>> buildPeriodButtons(String action, int deep) {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
-        List<String> availablePeriods = getAvailablePeriods();
+        List<String> availablePeriods = getAvailablePeriods(deep);
         availablePeriods.forEach((period) -> {
-            keyboard.add(Arrays.asList(new InlineKeyboardButton(period)
+            keyboard.add(Collections.singletonList(new InlineKeyboardButton(period)
                     .setSwitchInlineQueryCurrentChat("SALARY#" + action + "#" + period + "#")));
         });
         keyboard.add(reset);
         return keyboard;
     }
 
-    private List<String> getAvailablePeriods() {
-        List<String> ret = new ArrayList();
-        for (int i = -1; i < 1; i++) {
+    private List<String> getAvailablePeriods(int deep) {
+        List<String> ret = new ArrayList<>();
+        for (int i = deep; i < 1; i++) {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MONTH, i);
             ret.add(toString(calendar));
