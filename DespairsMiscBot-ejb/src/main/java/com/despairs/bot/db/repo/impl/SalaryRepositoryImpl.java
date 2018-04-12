@@ -7,15 +7,12 @@ package com.despairs.bot.db.repo.impl;
 
 import com.despairs.bot.db.repo.SalaryRepository;
 import com.despairs.bot.model.SalaryEntry;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import javax.sql.rowset.CachedRowSet;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
- *
  * @author EKovtunenko
  */
 public class SalaryRepositoryImpl extends AbstractRepository implements SalaryRepository {
@@ -25,7 +22,8 @@ public class SalaryRepositoryImpl extends AbstractRepository implements SalaryRe
 
     private static final String SELECT = "select * from salary where period = :period";
     private static final String SELECT_SUM_BY_PERIOD = "select sum(amount) as amount from salary where period = :period group by period";
-    
+    private static final String SELECT_SUM_BY_ALL_PERIODS = "select period, sum(amount) as amount from salary group by period";
+
     private static final String DELETE = "delete from salary where id = :id";
 
     private static final SalaryRepository instance = new SalaryRepositoryImpl();
@@ -84,6 +82,16 @@ public class SalaryRepositoryImpl extends AbstractRepository implements SalaryRe
         Double ret = null;
         while (rs.next()) {
             ret = rs.getDouble("amount");
+        }
+        return ret;
+    }
+
+    @Override
+    public Map<String, Double> sumByAllPeriods() throws SQLException {
+        Map<String, Double> ret = new HashMap<>();
+        CachedRowSet rs = select(SELECT_SUM_BY_ALL_PERIODS, Collections.emptyMap());
+        while (rs.next()) {
+            ret.put(rs.getString("period"), rs.getDouble("amount"));
         }
         return ret;
     }

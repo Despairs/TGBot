@@ -14,13 +14,16 @@ import com.despairs.bot.model.MessageType;
 import com.despairs.bot.model.ParseMode;
 import com.despairs.bot.model.SalaryEntry;
 import com.despairs.bot.model.TGMessage;
-import java.util.ArrayList;
-import java.util.List;
+import com.despairs.bot.utils.DateUtils;
 import org.telegram.telegrambots.api.objects.Message;
 import ru.iflex.commons.logging.Log4jLogger;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+
 /**
- *
  * @author EKovtunenko
  */
 @CommandCfg(alias = "SALARY#", scope = ScopeType.ADMIN)
@@ -36,6 +39,9 @@ public class SalaryActionCommand implements Command {
     private static final String ENTRIES_TABLE_ROW = "<pre>%d\t|\t%s\t|\t%.2f\t|\t%s</pre>\n";
 
     private static final String ENTRIES_TABLE_ROW_AGGREGATION = "<b>Всего</b>: <pre>%.2f</pre>\n";
+
+    private static final String ALL_TIME_TABLE_HEADER = "<b>Период</b>\t|\t<b>Сумма</b>\n";
+    private static final String ALL_TIME_TABLE_ROW = "<pre>%s\t|\t%.2f</pre>\n";
 
     private static final String BORDER = "<pre>-------------------------------------------------------</pre>\n";
 
@@ -70,15 +76,22 @@ public class SalaryActionCommand implements Command {
                 }
                 case "VIEW": {
                     String type = args[2];
-                    String period = args[3];
                     switch (type) {
-                        case "ALL":
+                        case "ALL": {
+                            String period = args[3];
                             List<SalaryEntry> list = salary.list(period);
                             msgText = buildViewAllMessage(list);
                             break;
-                        case "AGGREGATION":
+                        }
+                        case "AGGREGATION": {
+                            String period = args[3];
                             Double sum = salary.sumByPeriod(period);
                             msgText = buildViewAggregationMessage(period, sum);
+                        }
+                        break;
+                        case "ALL_TIME_AGGREGATION":
+                            Map<String, Double> sumByAllPeriods = salary.sumByAllPeriods();
+                            msgText = buildViewAggregationAllTimeMessage(sumByAllPeriods);
                             break;
                     }
                     break;
@@ -104,7 +117,7 @@ public class SalaryActionCommand implements Command {
             return null;
         }
         StringBuilder sb = new StringBuilder();
-        entries.stream().map(entry -> entry.getPeriod()).distinct().forEach(project -> {
+        entries.stream().map(SalaryEntry::getPeriod).distinct().forEach(project -> {
             sb.append(String.format(ENTRIES_TITLE, project));
             sb.append(ENTRIES_TABLE_HEADER);
             sb.append(BORDER);
@@ -118,9 +131,19 @@ public class SalaryActionCommand implements Command {
     }
 
     private String buildViewAggregationMessage(String period, Double amount) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(String.format(ENTRIES_TITLE, period));
-        sb.append(String.format(ENTRIES_TABLE_ROW_AGGREGATION, amount));
+        return String.format(ENTRIES_TITLE, period) +
+                String.format(ENTRIES_TABLE_ROW_AGGREGATION, amount);
+    }
+
+    private String buildViewAggregationAllTimeMessage(Map<String, Double> sumByAllPeriods) {
+        if (sumByAllPeriods == null || sumByAllPeriods.isEmpty()) {
+            return null;
+        }
+        StringBuilder sb = new StringBuilder(ALL_TIME_TABLE_HEADER).append(BORDER);
+        sumByAllPeriods.entrySet().stream()
+                .sorted(Comparator.comparing(o -> DateUtils.fromPeriod(o.getKey())))
+                .map(entry -> String.format(ALL_TIME_TABLE_ROW, entry.getKey(), entry.getValue()))
+                .forEach(row -> sb.append(row).append(BORDER));
         return sb.toString();
     }
 

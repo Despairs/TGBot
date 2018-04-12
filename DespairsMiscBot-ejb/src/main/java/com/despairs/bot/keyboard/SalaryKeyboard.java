@@ -5,10 +5,10 @@
  */
 package com.despairs.bot.keyboard;
 
+import com.despairs.bot.utils.DateUtils;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -16,16 +16,12 @@ import java.util.*;
  */
 public class SalaryKeyboard extends InlineKeyboardMarkup {
 
-    private static final String PERIOD_PATTERN = "LLLL yyyy";
-
-    private static final int DEFAULT_DEEP = -1;
-
     public static final int MAIN = 0;
     public static final int INPUT = 1;
     public static final int VIEW = 3;
     public static final int VIEW_ALL = 4;
     public static final int VIEW_AGGREGATION = 5;
-
+    private static final int DEFAULT_DEEP = -1;
     private final int level;
 
     private final List<InlineKeyboardButton> hide = Collections.singletonList(new InlineKeyboardButton("Скрыть")
@@ -78,6 +74,8 @@ public class SalaryKeyboard extends InlineKeyboardMarkup {
                         .setCallbackData("SALARY#VIEW#ALL")),
                 Collections.singletonList(new InlineKeyboardButton("Аггрегация")
                         .setCallbackData("SALARY#VIEW#AGGREGATION")),
+                Collections.singletonList(new InlineKeyboardButton("Аггрегация за все время")
+                        .setSwitchInlineQueryCurrentChat("SALARY#VIEW#ALL_TIME_AGGREGATION")),
                 reset);
     }
 
@@ -101,12 +99,9 @@ public class SalaryKeyboard extends InlineKeyboardMarkup {
         for (int i = deep; i < 1; i++) {
             Calendar calendar = Calendar.getInstance();
             calendar.add(Calendar.MONTH, i);
-            ret.add(toString(calendar));
+            ret.add(DateUtils.toPeriod(calendar));
         }
         return ret;
     }
 
-    private String toString(Calendar cal) {
-        return new SimpleDateFormat(PERIOD_PATTERN, new Locale("ru")).format(cal.getTime());
-    }
 }

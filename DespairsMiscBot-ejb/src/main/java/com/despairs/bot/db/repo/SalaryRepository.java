@@ -8,6 +8,7 @@ package com.despairs.bot.db.repo;
 import com.despairs.bot.model.SalaryEntry;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  *
@@ -25,4 +26,5 @@ public interface SalaryRepository {
     
     Double sumByPeriod(String period) throws SQLException;
 
+    Map<String, Double> sumByAllPeriods() throws SQLException;
 }

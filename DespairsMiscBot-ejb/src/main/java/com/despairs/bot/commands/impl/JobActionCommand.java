@@ -8,21 +8,16 @@ package com.despairs.bot.commands.impl;
 import com.despairs.bot.commands.Command;
 import com.despairs.bot.db.repo.JobRepository;
 import com.despairs.bot.db.repo.impl.JobRepositoryImpl;
-import com.despairs.bot.model.JobEntry;
-import com.despairs.bot.model.MessageType;
-import com.despairs.bot.model.ParseMode;
-import com.despairs.bot.model.TGMessage;
-import com.despairs.bot.model.User;
+import com.despairs.bot.model.*;
+import org.telegram.telegrambots.api.objects.Message;
+import ru.iflex.commons.logging.Log4jLogger;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.telegram.telegrambots.api.objects.Message;
-import ru.iflex.commons.logging.Log4jLogger;
 
 /**
- *
  * @author EKovtunenko
  */
 public class JobActionCommand implements Command {
@@ -145,11 +140,12 @@ public class JobActionCommand implements Command {
 
     private String buildStatisticMessage(List<JobEntry> entries) {
         StringBuilder sb = new StringBuilder();
-        entries.stream().map(entry -> entry.getProject()).distinct().forEach((String project) -> {
+        entries.stream().map(JobEntry::getProject).distinct().forEach((String project) -> {
             sb.append(String.format(ENTRIES_TITLE_MESSAGES, project));
             Double totalDuration = entries.stream()
                     .filter(entry -> entry.getProject().equals(project))
-                    .collect(Collectors.summingDouble(JobEntry::getDuration));
+                    .mapToDouble(JobEntry::getDuration)
+                    .sum();
             sb.append(String.format(ENTRIES_TABLE_ROW_TOTAL, totalDuration));
         });
         return sb.toString();
@@ -160,7 +156,7 @@ public class JobActionCommand implements Command {
             return null;
         }
         StringBuilder sb = new StringBuilder();
-        entries.stream().map(entry -> entry.getProject()).distinct().forEach(project -> {
+        entries.stream().map(JobEntry::getProject).distinct().forEach(project -> {
             sb.append(String.format(ENTRIES_TITLE_MESSAGES, project));
             sb.append(ENTRIES_TABLE_HEADER_MESSAGES_FULL);
             sb.append(BORDER);
