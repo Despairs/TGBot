@@ -1,5 +1,6 @@
 package com.despairs.bot.fork;
 
+import com.despairs.bot.tg.HttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
@@ -56,8 +57,6 @@ public abstract class DefaultAbsSender extends AbsSender {
     private final ExecutorService exe;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final DefaultBotOptions options;
-    private volatile CloseableHttpClient httpclient;
-    private volatile RequestConfig requestConfig;
 
     public DefaultAbsSender() {
         this(ApiContext.getInstance(DefaultBotOptions.class));
@@ -67,20 +66,6 @@ public abstract class DefaultAbsSender extends AbsSender {
         super();
         this.exe = Executors.newFixedThreadPool(options.getMaxThreads());
         this.options = options;
-        httpclient = HttpClientBuilder.create()
-                .setSSLHostnameVerifier(new NoopHostnameVerifier())
-                .setConnectionTimeToLive(70, TimeUnit.SECONDS)
-                .setMaxConnTotal(100)
-                .build();
-
-        requestConfig = options.getRequestConfig();
-
-        if (requestConfig == null) {
-            requestConfig = RequestConfig.copy(RequestConfig.custom().build())
-                    .setSocketTimeout(SOCKET_TIMEOUT)
-                    .setConnectTimeout(SOCKET_TIMEOUT)
-                    .setConnectionRequestTimeout(SOCKET_TIMEOUT).build();
-        }
     }
 
     /**
@@ -138,7 +123,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         sendDocument.validate();
         try {
             String url = getBaseUrl() + SendDocument.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
@@ -183,7 +168,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         sendPhoto.validate();
         try {
             String url = getBaseUrl() + SendPhoto.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
@@ -228,7 +213,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         sendVideo.validate();
         try {
             String url = getBaseUrl() + SendVideo.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
@@ -282,7 +267,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         sendVideoNote.validate();
         try {
             String url = getBaseUrl() + SendVideoNote.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
@@ -331,7 +316,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         sendSticker.validate();
         try {
             String url = getBaseUrl() + SendSticker.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
@@ -378,7 +363,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         sendAudio.validate();
         try {
             String url = getBaseUrl() + SendAudio.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
             builder.setCharset(StandardCharsets.UTF_8);
@@ -438,7 +423,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         sendVoice.validate();
         try {
             String url = getBaseUrl() + SendVoice.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
             builder.setCharset(StandardCharsets.UTF_8);
@@ -485,7 +470,7 @@ public abstract class DefaultAbsSender extends AbsSender {
 
         try {
             String url = getBaseUrl() + SetChatPhoto.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
@@ -512,7 +497,7 @@ public abstract class DefaultAbsSender extends AbsSender {
 
         try {
             String url = getBaseUrl() + SendMediaGroup.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
 
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
@@ -555,7 +540,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         addStickerToSet.validate();
         try {
             String url = getBaseUrl() + AddStickerToSet.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
             builder.setCharset(StandardCharsets.UTF_8);
@@ -591,7 +576,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         createNewStickerSet.validate();
         try {
             String url = getBaseUrl() + CreateNewStickerSet.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
             builder.setCharset(StandardCharsets.UTF_8);
@@ -629,7 +614,7 @@ public abstract class DefaultAbsSender extends AbsSender {
         uploadStickerFile.validate();
         try {
             String url = getBaseUrl() + UploadStickerFile.PATH;
-            HttpPost httppost = configuredHttpPost(url);
+            HttpPost httppost = new HttpPost(url);
             MultipartEntityBuilder builder = MultipartEntityBuilder.create();
             builder.setLaxMode();
             builder.setCharset(StandardCharsets.UTF_8);
@@ -716,26 +701,20 @@ public abstract class DefaultAbsSender extends AbsSender {
     private <T extends Serializable, Method extends BotApiMethod<T>> String sendMethodRequest(Method method) throws TelegramApiValidationException, IOException {
         method.validate();
         String url = getBaseUrl() + method.getMethod();
-        HttpPost httppost = configuredHttpPost(url);
+        HttpPost httppost = new HttpPost(url);
         httppost.addHeader("charset", StandardCharsets.UTF_8.name());
         httppost.setEntity(new StringEntity(objectMapper.writeValueAsString(method), ContentType.APPLICATION_JSON));
         return sendHttpPostRequest(httppost);
     }
 
     private String sendHttpPostRequest(HttpPost httppost) throws IOException {
-        try (CloseableHttpResponse response = httpclient.execute(httppost)) {
+        try (CloseableHttpResponse response = HttpClient.getInstance().execute(httppost)) {
             HttpEntity ht = response.getEntity();
             BufferedHttpEntity buf = new BufferedHttpEntity(ht);
             return EntityUtils.toString(buf, StandardCharsets.UTF_8);
         }
     }
-
-    private HttpPost configuredHttpPost(String url) {
-        HttpPost httppost = new HttpPost(url);
-        httppost.setConfig(requestConfig);
-        return httppost;
-    }
-
+    
     protected String getBaseUrl() {
         return options.getBaseUrl() + getBotToken() + "/";
     }

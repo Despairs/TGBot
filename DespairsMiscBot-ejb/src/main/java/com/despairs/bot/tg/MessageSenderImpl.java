@@ -31,6 +31,7 @@ import ru.iflex.commons.logging.Log4jLogger;
 public class MessageSenderImpl implements TGMessageSender {
 
     private Logger logger = Log4jLogger.getLogger(MessageSenderImpl.class);
+
     @Inject
     private Bot bot;
 
