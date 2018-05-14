@@ -72,7 +72,7 @@ public class UserRepositoryImpl extends AbstractRepository implements UserReposi
         user.setId(id);
         user.setName(rs.getString("name"));
         user.setRedmineId(rs.getString("redmine_id"));
-        user.setIsAdmin(rs.getBoolean("is_admin"));
+        user.setAdmin(rs.getBoolean("is_admin"));
         return user;
     }
 

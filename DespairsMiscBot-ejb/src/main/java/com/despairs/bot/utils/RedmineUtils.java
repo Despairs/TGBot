@@ -9,13 +9,13 @@ import com.despairs.bot.db.repo.SettingsRepository;
 import com.despairs.bot.model.Settings;
 import com.taskadapter.redmineapi.RedmineManager;
 import com.taskadapter.redmineapi.RedmineManagerFactory;
-import java.sql.SQLException;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import org.apache.http.impl.client.HttpClients;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.sql.SQLException;
+
 /**
- *
  * @author EKovtunenko
  */
 @Singleton

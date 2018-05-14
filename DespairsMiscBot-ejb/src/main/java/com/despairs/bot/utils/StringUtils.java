@@ -26,14 +26,5 @@ public class StringUtils {
         }
         return ret;
     }
-    
-    public static String extractByRegExp(String source, String regexp) {
-        String ret = null;
-        Pattern p = Pattern.compile(regexp);
-        Matcher matcher = p.matcher(source);
-        if (matcher.find()) {
-            ret = matcher.group(1);
-        }
-        return ret;
-    }
+
 }

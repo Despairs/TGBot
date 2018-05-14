@@ -10,5 +10,5 @@ package com.despairs.bot.model;
  * @author EKovtunenko
  */
 public enum ParseMode {
-    Markdown, HTML;
+    Markdown, HTML
 }

@@ -4,17 +4,14 @@ import com.despairs.bot.tg.HttpClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
-import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
+import org.telegram.telegrambots.ApiContext;
 import org.telegram.telegrambots.api.methods.BotApiMethod;
 import org.telegram.telegrambots.api.methods.groupadministration.SetChatPhoto;
 import org.telegram.telegrambots.api.methods.send.*;
@@ -24,12 +21,14 @@ import org.telegram.telegrambots.api.methods.stickers.UploadStickerFile;
 import org.telegram.telegrambots.api.objects.File;
 import org.telegram.telegrambots.api.objects.Message;
 import org.telegram.telegrambots.api.objects.media.InputMedia;
+import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import org.telegram.telegrambots.exceptions.TelegramApiRequestException;
 import org.telegram.telegrambots.exceptions.TelegramApiValidationException;
 import org.telegram.telegrambots.updateshandlers.DownloadFileCallback;
 import org.telegram.telegrambots.updateshandlers.SentCallback;
 
+import javax.inject.Inject;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.MalformedURLException;
@@ -38,11 +37,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import org.telegram.telegrambots.ApiContext;
-
-import static org.telegram.telegrambots.Constants.SOCKET_TIMEOUT;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
 
 /**
  * @author Ruben Bermudez
@@ -53,15 +47,16 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 @SuppressWarnings("unused")
 public abstract class DefaultAbsSender extends AbsSender {
     private static final ContentType TEXT_PLAIN_CONTENT_TYPE = ContentType.create("text/plain", StandardCharsets.UTF_8);
-
     private final ExecutorService exe;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final DefaultBotOptions options;
+    @Inject
+    private HttpClient httpClient;
 
     public DefaultAbsSender() {
         this(ApiContext.getInstance(DefaultBotOptions.class));
     }
-    
+
     protected DefaultAbsSender(DefaultBotOptions options) {
         super();
         this.exe = Executors.newFixedThreadPool(options.getMaxThreads());
@@ -70,6 +65,7 @@ public abstract class DefaultAbsSender extends AbsSender {
 
     /**
      * Returns the token of the bot to be able to perform Telegram Api Requests
+     *
      * @return Token of the bot
      */
     public abstract String getBotToken();
@@ -81,7 +77,7 @@ public abstract class DefaultAbsSender extends AbsSender {
     // Send Requests
 
     public java.io.File downloadFile(String filePath) throws TelegramApiException {
-        if(filePath == null || filePath.isEmpty()){
+        if (filePath == null || filePath.isEmpty()) {
             throw new TelegramApiException("Parameter file can not be null");
         }
         String url = File.getFileUrl(getBotToken(), filePath);
@@ -97,7 +93,7 @@ public abstract class DefaultAbsSender extends AbsSender {
     }
 
     public void downloadFileAsync(String filePath, DownloadFileCallback<String> callback) throws TelegramApiException {
-        if(filePath == null || filePath.isEmpty()){
+        if (filePath == null || filePath.isEmpty()) {
             throw new TelegramApiException("Parameter filePath can not be null");
         }
         assertParamNotNull(callback, "callback");
@@ -353,6 +349,7 @@ public abstract class DefaultAbsSender extends AbsSender {
 
     /**
      * Sends a file using Send Audio method (https://core.telegram.org/bots/api#sendaudio)
+     *
      * @param sendAudio Information to send
      * @return If success, the sent Message is returned
      * @throws TelegramApiException If there is any error sending the audio
@@ -391,7 +388,7 @@ public abstract class DefaultAbsSender extends AbsSender {
             if (sendAudio.getTitle() != null) {
                 builder.addTextBody(SendAudio.TITLE_FIELD, sendAudio.getTitle(), TEXT_PLAIN_CONTENT_TYPE);
             }
-            if(sendAudio.getDuration() != null){
+            if (sendAudio.getDuration() != null) {
                 builder.addTextBody(SendAudio.DURATION_FIELD, sendAudio.getDuration().toString(), TEXT_PLAIN_CONTENT_TYPE);
             }
             if (sendAudio.getDisableNotification() != null) {
@@ -413,6 +410,7 @@ public abstract class DefaultAbsSender extends AbsSender {
     /**
      * Sends a voice note using Send Voice method (https://core.telegram.org/bots/api#sendvoice)
      * For this to work, your audio must be in an .ogg file encoded with OPUS
+     *
      * @param sendVoice Information to send
      * @return If success, the sent Message is returned
      * @throws TelegramApiException If there is any error sending the audio
@@ -708,13 +706,13 @@ public abstract class DefaultAbsSender extends AbsSender {
     }
 
     private String sendHttpPostRequest(HttpPost httppost) throws IOException {
-        try (CloseableHttpResponse response = HttpClient.getInstance().execute(httppost)) {
+        try (CloseableHttpResponse response = httpClient.execute(httppost)) {
             HttpEntity ht = response.getEntity();
             BufferedHttpEntity buf = new BufferedHttpEntity(ht);
             return EntityUtils.toString(buf, StandardCharsets.UTF_8);
         }
     }
-    
+
     protected String getBaseUrl() {
         return options.getBaseUrl() + getBotToken() + "/";
     }

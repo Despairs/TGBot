@@ -6,6 +6,8 @@
 package com.despairs.bot.keyboard;
 
 import java.util.Arrays;
+import java.util.Collections;
+
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
@@ -27,6 +29,6 @@ public class RedmineGotIssueKeyboard extends InlineKeyboardMarkup {
         InlineKeyboardButton button = new InlineKeyboardButton();
         button.setText("Назначено " + username);
         button.setCallbackData("redmine_issue_already_assigned");
-        setKeyboard(Arrays.asList(Arrays.asList(button)));
+        setKeyboard(Collections.singletonList(Collections.singletonList(button)));
     }
 }

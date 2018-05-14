@@ -35,6 +35,9 @@ public class TelegramUpdateProducer {
     @Inject
     private Bot bot;
 
+    @Inject
+    private HttpClient httpClient;
+
     private GetUpdates request;
 
     private int lastReceivedUpdate = 0;
@@ -44,7 +47,7 @@ public class TelegramUpdateProducer {
         try {
             request = buildRequest();
             HttpPost httpPost = buildHttpPost(request);
-            try (CloseableHttpResponse response = HttpClient.getInstance().execute(httpPost)) {
+            try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
                 updates = extractUpdateList(response);
                 updates.removeIf(update -> update.getUpdateId() < lastReceivedUpdate);
                 lastReceivedUpdate = updates.stream()

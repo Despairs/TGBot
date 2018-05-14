@@ -20,4 +20,6 @@ public class Settings {
     public static final String REDMINE_ISSUES_ASSIGNED_TO_USERS = "REDMINE_ISSUES_ASSIGNED_TO_USERS";
     public static final String VK_TOKEN = "VK_TOKEN";
     public static final String VK_USER_ID = "VK_USER_ID";
+    public static final String PROXY_HOST = "PROXY_HOST";
+    public static final String PROXY_PORT = "PROXY_PORT";
 }

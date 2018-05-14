@@ -11,6 +11,7 @@ import com.despairs.bot.model.User;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.telegram.telegrambots.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -37,9 +38,9 @@ public class JobKeyboard extends InlineKeyboardMarkup {
 
     private final int level;
 
-    private final List<InlineKeyboardButton> hide = Arrays.asList(new InlineKeyboardButton("Скрыть")
+    private final List<InlineKeyboardButton> hide = Collections.singletonList(new InlineKeyboardButton("Скрыть")
             .setCallbackData("JOB#HIDE"));
-    private final List<InlineKeyboardButton> reset = Arrays.asList(new InlineKeyboardButton("На главную")
+    private final List<InlineKeyboardButton> reset = Collections.singletonList(new InlineKeyboardButton("На главную")
             .setCallbackData("JOB#RESET"));
 
     private final User user;
@@ -88,31 +89,31 @@ public class JobKeyboard extends InlineKeyboardMarkup {
 
     private List<List<InlineKeyboardButton>> buildMainKeyboard() {
         return Arrays.asList(
-                Arrays.asList(new InlineKeyboardButton("Ввод")
+                Collections.singletonList(new InlineKeyboardButton("Ввод")
                         .setCallbackData("JOB#INPUT")),
-                Arrays.asList(new InlineKeyboardButton("Изменение")
+                Collections.singletonList(new InlineKeyboardButton("Изменение")
                         .setSwitchInlineQueryCurrentChat("JOB#UPDATE#ID#HOURS#[DATE{yyyy-MM-dd}]#[COMMENT]")),
-                Arrays.asList(new InlineKeyboardButton("Удаление")
+                Collections.singletonList(new InlineKeyboardButton("Удаление")
                         .setSwitchInlineQueryCurrentChat("JOB#DELETE#ID")),
-                Arrays.asList(new InlineKeyboardButton("Просмотр")
+                Collections.singletonList(new InlineKeyboardButton("Просмотр")
                         .setCallbackData("JOB#VIEW")),
                 hide);
     }
 
     private List<List<InlineKeyboardButton>> buildViewKeyboard() {
         return Arrays.asList(
-                Arrays.asList(new InlineKeyboardButton("Все вхождения")
+                Collections.singletonList(new InlineKeyboardButton("Все вхождения")
                         .setCallbackData("JOB#VIEW#ALL")),
-                Arrays.asList(new InlineKeyboardButton("Аггрегация")
+                Collections.singletonList(new InlineKeyboardButton("Аггрегация")
                         .setCallbackData("JOB#VIEW#AGGREGATION")),
                 reset);
     }
 
     private List<List<InlineKeyboardButton>> buildViewPaymentKeyboard(String action) {
         return Arrays.asList(
-                Arrays.asList(new InlineKeyboardButton("С последней выплаты")
+                Collections.singletonList(new InlineKeyboardButton("С последней выплаты")
                         .setCallbackData("JOB#" + action + "#LAST_PAYMENT")),
-                Arrays.asList(new InlineKeyboardButton("За все время")
+                Collections.singletonList(new InlineKeyboardButton("За все время")
                         .setCallbackData("JOB#" + action + "#ALL_TIME")),
                 reset);
     }
@@ -126,7 +127,7 @@ public class JobKeyboard extends InlineKeyboardMarkup {
         try {
             List<String> availableProjects = jobs.getProjects(user.getId());
             availableProjects.forEach((project) -> {
-                keyboard.add(Arrays.asList(new InlineKeyboardButton(project)
+                keyboard.add(Collections.singletonList(new InlineKeyboardButton(project)
                         .setSwitchInlineQueryCurrentChat("JOB#" + action + "#" + project + "#" + suffix)));
             });
         } catch (SQLException ex) {
