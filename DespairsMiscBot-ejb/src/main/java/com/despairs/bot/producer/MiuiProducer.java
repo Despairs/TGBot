@@ -47,14 +47,7 @@ public class MiuiProducer implements MessageProducer {
             doc = Jsoup.connect(MI5_FORUM_URL).get();
             List<String> ids = doc.select(TBODY).stream()
                     .map(e -> e.attr(ID))
-                    .filter(e -> {
-                        try {
-                            return !e.isEmpty() && !references.isReferenceStored(e, PRODUCER_ID);
-                        } catch (SQLException ex) {
-                            Log4jLogger.getLogger(this.getClass()).error(ex);
-                            return false;
-                        }
-                    })
+                    .filter(e -> !e.isEmpty() && !references.isReferenceStored(e, PRODUCER_ID))
                     .collect(Collectors.toList());
 
             ids.forEach(id -> {
@@ -66,11 +59,7 @@ public class MiuiProducer implements MessageProducer {
                         ret.add(m);
                     }
                 });
-                try {
-                    references.createReference(id, PRODUCER_ID);
-                } catch (SQLException ex) {
-                    Log4jLogger.getLogger(this.getClass()).error(ex);
-                }
+                references.createReference(id, PRODUCER_ID);
             });
         } catch (IOException ex) {
             Log4jLogger.getLogger(this.getClass()).error(ex);

@@ -6,14 +6,15 @@
 package com.despairs.bot.db.repo.impl;
 
 import com.despairs.bot.db.repo.ProcessedReferenceRepository;
+import ru.iflex.commons.logging.Log4jLogger;
+
+import javax.inject.Singleton;
+import javax.sql.rowset.CachedRowSet;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
-import javax.inject.Singleton;
-import javax.sql.rowset.CachedRowSet;
 
 /**
- *
  * @author EKovtunenko
  */
 @Singleton
@@ -25,20 +26,30 @@ public class ProcessedReferenceRepositoryImpl extends AbstractRepository impleme
     private static final String LAST_REFERENCE_SQL = "select reference from processed_reference where producer = :producer order by id, timestamp desc limit 1";
 
     @Override
-    public void createReference(String ref, String producer) throws SQLException {
+    public void createReference(String ref, String producer) {
         Map<String, Object> variables = new HashMap<>();
         variables.put("producer", producer);
         variables.put("reference", ref);
-        dml(INSERT_SQL, variables);
+        try {
+            dml(INSERT_SQL, variables);
+        } catch (SQLException e) {
+            Log4jLogger.getLogger(this.getClass()).error(e);
+        }
     }
 
     @Override
-    public boolean isReferenceStored(String ref, String producer) throws SQLException {
+    public boolean isReferenceStored(String ref, String producer) {
         Map<String, Object> variables = new HashMap<>();
         variables.put("producer", producer);
         variables.put("reference", ref);
-        CachedRowSet rs = select(EXISTS_SQL, variables);
-        return rs.size() > 0;
+        CachedRowSet rs = null;
+        try {
+            rs = select(EXISTS_SQL, variables);
+            return rs.size() > 0;
+        } catch (SQLException e) {
+            Log4jLogger.getLogger(this.getClass()).error(e);
+            return false;
+        }
     }
 
     @Override

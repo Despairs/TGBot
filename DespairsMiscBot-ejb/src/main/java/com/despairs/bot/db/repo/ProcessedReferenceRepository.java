@@ -8,16 +8,15 @@ package com.despairs.bot.db.repo;
 import java.sql.SQLException;
 
 /**
- *
  * @author EKovtunenko
  */
 public interface ProcessedReferenceRepository {
 
-    void createReference(String ref, String producer) throws SQLException;
-    
+    void createReference(String ref, String producer);
+
     void updateReference(String oldRef, String newRef, String producer) throws SQLException;
 
-    boolean isReferenceStored(String ref, String producer) throws SQLException;
-    
+    boolean isReferenceStored(String ref, String producer);
+
     String getLastReference(String producer) throws SQLException;
 }

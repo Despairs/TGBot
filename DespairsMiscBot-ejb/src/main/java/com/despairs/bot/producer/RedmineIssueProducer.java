@@ -82,14 +82,7 @@ public class RedmineIssueProducer implements MessageProducer {
                 ResultsWrapper<Issue> issuesWrapper = issueManager.getIssues(new Params().add("assigned_to_id", user));
                 List<Issue> issues = issuesWrapper.getResults();
                 issues.stream()
-                        .filter(issue -> {
-                            try {
-                                return !references.isReferenceStored(String.valueOf(issue.getId()), String.format(PRODUCER_ID, user));
-                            } catch (SQLException ex) {
-                                Log4jLogger.getLogger(this.getClass()).error(ex);
-                                return false;
-                            }
-                        })
+                        .filter(issue -> !references.isReferenceStored(String.valueOf(issue.getId()), String.format(PRODUCER_ID, user)))
                         .forEach(_issue -> {
                             TGMessage m = new TGMessage(MessageType.TEXT);
                             m.setText(buildMessage(_issue));
@@ -98,11 +91,7 @@ public class RedmineIssueProducer implements MessageProducer {
                             m.setChatId(channelId);
                             m.setKeyboard(new RedmineIssueKeyboard(_issue.getId()));
                             ret.add(m);
-                            try {
-                                references.createReference(String.valueOf(_issue.getId()), String.format(PRODUCER_ID, user));
-                            } catch (SQLException ex) {
-                                Log4jLogger.getLogger(this.getClass()).error(ex);
-                            }
+                            references.createReference(String.valueOf(_issue.getId()), String.format(PRODUCER_ID, user));
                         });
             } catch (RedmineException ex) {
                 Log4jLogger.getLogger(this.getClass()).error(ex);
