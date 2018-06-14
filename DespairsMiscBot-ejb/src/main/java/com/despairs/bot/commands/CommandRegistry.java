@@ -8,29 +8,31 @@ package com.despairs.bot.commands;
 import com.despairs.bot.Bot;
 import com.despairs.bot.commands.impl.UnknownCommand;
 import com.despairs.bot.utils.CommandHelper;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
 import javax.annotation.PostConstruct;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
- *
  * @author EKovtunenko
  */
 @Singleton
 public class CommandRegistry {
 
+    private static final Map<String, Command> commandWithAliases = new HashMap<>();
     @Inject
     private Instance<Command> commands;
-
-    private static final Map<String, Command> commandWithAliases = new HashMap<>();
-
     @Inject
     private UnknownCommand unknownCommand;
+
+    public static Map<String, Command> getCommands() {
+        return commandWithAliases;
+    }
 
     @PostConstruct
     public void init() {
@@ -43,14 +45,15 @@ public class CommandRegistry {
     }
 
     public Command getCommand(String name) {
-        Command ret = unknownCommand;
+        Command ret;
         if (name.contains(Bot.BOT_USER_NAME)) {
             name = name.replace(Bot.BOT_USER_NAME, "");
         }
         ret = commandWithAliases.get(name);
         if (ret == null) {
-            final String _name = name;
-            List<String> foundedAliases = commandWithAliases.keySet().stream().filter(commandAlias -> _name.startsWith(commandAlias)).collect(Collectors.toList());
+            List<String> foundedAliases = commandWithAliases.keySet().stream()
+                    .filter(name::startsWith)
+                    .collect(Collectors.toList());
             if (foundedAliases.size() == 1) {
                 String alias = foundedAliases.get(0);
                 ret = commandWithAliases.get(alias);
@@ -59,10 +62,6 @@ public class CommandRegistry {
             }
         }
         return ret;
-    }
-
-    public static Map<String, Command> getCommands() {
-        return commandWithAliases;
     }
 
 }

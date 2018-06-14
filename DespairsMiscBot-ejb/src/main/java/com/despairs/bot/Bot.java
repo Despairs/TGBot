@@ -11,11 +11,6 @@ import com.despairs.bot.db.repo.SettingsRepository;
 import com.despairs.bot.db.repo.UserRepository;
 import com.despairs.bot.fork.TelegramLongPollingBot;
 import com.despairs.bot.model.Settings;
-import java.sql.SQLException;
-import java.util.logging.Level;
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import org.apache.logging.log4j.Logger;
 import org.telegram.telegrambots.api.objects.CallbackQuery;
 import org.telegram.telegrambots.api.objects.Message;
@@ -24,25 +19,27 @@ import org.telegram.telegrambots.api.objects.User;
 import org.telegram.telegrambots.exceptions.TelegramApiException;
 import ru.iflex.commons.logging.Log4jLogger;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import java.sql.SQLException;
+
 /**
- *
  * @author EKovtunenko
  */
 @ApplicationScoped
 public class Bot extends TelegramLongPollingBot {
 
+    public static String BOT_USER_NAME = "";
     private Logger logger = Log4jLogger.getLogger(Bot.class);
-
     @Inject
     private SettingsRepository settings;
     @Inject
     private UserRepository users;
     @Inject
     private CommandProcessorFactory processorFactory;
-
     private String token;
     private String botDisplayName;
-    public static String BOT_USER_NAME = "";
 
     @PostConstruct
     public void init() {
@@ -76,12 +73,12 @@ public class Bot extends TelegramLongPollingBot {
 
         User user = message != null ? message.getFrom()
                 : channelPost != null ? channelPost.getFrom()
-                        : callbackQuery != null ? callbackQuery.getFrom() : null;
+                : callbackQuery != null ? callbackQuery.getFrom() : null;
 
         if (user != null) {
             try {
                 if (!users.isUserRegistered(user.getId())) {
-                    users.registerUser(user.getId(), user.getUserName());
+                    users.registerUser(user.getId(), String.format("%s %s (%s)", user.getLastName(), user.getFirstName(), user.getUserName()));
                 }
                 ret = users.getUser(user.getId());
             } catch (SQLException ex) {

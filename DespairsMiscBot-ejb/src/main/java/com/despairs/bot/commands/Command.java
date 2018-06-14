@@ -7,6 +7,8 @@ package com.despairs.bot.commands;
 
 import java.util.List;
 import javax.enterprise.context.RequestScoped;
+
+import com.despairs.bot.model.TGMessage;
 import org.telegram.telegrambots.api.objects.Message;
 
 /**
@@ -16,5 +18,5 @@ import org.telegram.telegrambots.api.objects.Message;
 @RequestScoped
 public interface Command {
 
-    List invoke(Message message);
+    List<TGMessage> invoke(Message message);
 }
