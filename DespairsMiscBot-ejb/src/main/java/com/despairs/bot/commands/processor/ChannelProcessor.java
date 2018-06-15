@@ -5,14 +5,20 @@
  */
 package com.despairs.bot.commands.processor;
 
+import com.despairs.bot.Scheduler;
 import com.despairs.bot.model.MessageType;
 import com.despairs.bot.model.TGMessage;
+
+import javax.ejb.EJB;
 
 /**
  *
  * @author EKovtunenko
  */
 public class ChannelProcessor extends BaseProcessor {
+
+    @EJB
+    private Scheduler scheduler;
 
     private static final String RESPONSE = "Обновляю все задания";
 
@@ -21,8 +27,7 @@ public class ChannelProcessor extends BaseProcessor {
         TGMessage msg = new TGMessage(MessageType.TEXT);
         msg.setText(RESPONSE);
         sender.sendTGMessage(msg, message.getChatId(), message.getMessageId());
-        //@@TODO сделать обновление
-//        ScheduleRegistry.getInstance().runAll();
+        scheduler.doScheduleAction();
     }
 
 }

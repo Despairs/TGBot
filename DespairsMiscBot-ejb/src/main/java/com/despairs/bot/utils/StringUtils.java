@@ -5,11 +5,7 @@
  */
 package com.despairs.bot.utils;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
- *
  * @author EKovtunenko
  */
 public class StringUtils {
@@ -27,4 +23,8 @@ public class StringUtils {
         return ret;
     }
 
+
+    public static boolean isNullOrEmpty(String s) {
+        return s == null || "null".equals(s) || s.isEmpty();
+    }
 }

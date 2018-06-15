@@ -5,32 +5,24 @@
  */
 package com.despairs.bot;
 
-import com.despairs.bot.tg.TGMessageSender;
 import com.despairs.bot.db.repo.SettingsRepository;
 import com.despairs.bot.model.Settings;
 import com.despairs.bot.model.TGMessage;
 import com.despairs.bot.producer.MessageProducer;
+import com.despairs.bot.tg.TGMessageSender;
+import org.telegram.telegrambots.api.objects.Message;
+import ru.iflex.commons.logging.Log4jLogger;
+
+import javax.annotation.PostConstruct;
+import javax.ejb.*;
+import javax.enterprise.inject.Any;
+import javax.enterprise.inject.Instance;
+import javax.inject.Inject;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.annotation.PostConstruct;
-import javax.ejb.ConcurrencyManagement;
-import javax.ejb.ConcurrencyManagementType;
-import javax.ejb.LocalBean;
-import javax.ejb.Lock;
-import javax.ejb.LockType;
-import javax.ejb.Schedule;
-import javax.ejb.Singleton;
-import javax.ejb.Startup;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
-import javax.enterprise.inject.Any;
-import javax.enterprise.inject.Instance;
-import javax.inject.Inject;
-import org.telegram.telegrambots.api.objects.Message;
-import ru.iflex.commons.logging.Log4jLogger;
 
 /**
  *
@@ -70,7 +62,7 @@ public class Scheduler {
     }
 
     @Schedule(hour = "*", minute = "*/10", persistent = false)
-    private void doScheduleAction() {
+    public void doScheduleAction() {
         Log4jLogger.pushThread();
         if (settings == null) {
             init();

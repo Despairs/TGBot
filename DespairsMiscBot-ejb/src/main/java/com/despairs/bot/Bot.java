@@ -24,6 +24,8 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.sql.SQLException;
 
+import static com.despairs.bot.utils.StringUtils.isNullOrEmpty;
+
 /**
  * @author EKovtunenko
  */
@@ -78,7 +80,7 @@ public class Bot extends TelegramLongPollingBot {
         if (user != null) {
             try {
                 if (!users.isUserRegistered(user.getId())) {
-                    users.registerUser(user.getId(), String.format("%s %s (%s)", user.getLastName(), user.getFirstName(), user.getUserName()));
+                    users.registerUser(user.getId(), buildUsername(user));
                 }
                 ret = users.getUser(user.getId());
             } catch (SQLException ex) {
@@ -98,6 +100,41 @@ public class Bot extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         return botDisplayName;
+    }
+
+    private String buildUsername(User user) {
+        String lastName = user.getLastName();
+        String firstName = user.getFirstName();
+        String userName = user.getUserName();
+        StringBuilder sb = new StringBuilder();
+        boolean isLastNameFilled = !isNullOrEmpty(lastName);
+        if (isLastNameFilled) {
+            sb.append(lastName);
+        }
+        boolean isFirstNameFilled = !isNullOrEmpty(firstName);
+        if (isFirstNameFilled) {
+            addSpaceIfNotEmpty(sb);
+            sb.append(firstName);
+        }
+        boolean isUsernameFilled = !isNullOrEmpty(userName);
+        if (isUsernameFilled) {
+            addSpaceIfNotEmpty(sb);
+            boolean needBrackets = isFirstNameFilled || isLastNameFilled;
+            if (needBrackets) {
+                sb.append("(");
+            }
+            sb.append(userName);
+            if (needBrackets) {
+                sb.append(")");
+            }
+        }
+        return sb.toString();
+    }
+
+    private void addSpaceIfNotEmpty(StringBuilder sb) {
+        if (sb.length() > 0) {
+            sb.append(" ");
+        }
     }
 
     private void registerBotName() {

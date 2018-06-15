@@ -1,13 +1,15 @@
 package com.despairs.bot.commands.impl;
 
+import com.despairs.bot.clients.AnexTour;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import java.time.LocalDate;
 
 public class AnexTourCurrencyTest {
 
     @Test
     public void invoke() {
-        System.out.println(new AnexTourCurrency().invoke(null));
+        System.out.println(AnexTour.API.getCurrency(LocalDate.now()));
+        System.out.println(AnexTour.API.getCurrency(LocalDate.now().minusDays(1)));
     }
 }

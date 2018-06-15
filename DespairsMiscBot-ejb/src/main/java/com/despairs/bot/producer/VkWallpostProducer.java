@@ -18,31 +18,27 @@ import com.vk.api.sdk.httpclient.HttpTransportClient;
 import com.vk.api.sdk.objects.photos.Photo;
 import com.vk.api.sdk.objects.wall.Wallpost;
 import com.vk.api.sdk.objects.wall.responses.GetResponse;
-import java.util.ArrayList;
-import java.util.List;
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 import ru.iflex.commons.logging.Log4jLogger;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author EKovtunenko
  */
 public class VkWallpostProducer implements MessageProducer {
 
     private static final String VIDEO_LINK_PATTERN = "https://vk.com/video%d_%d";
-
+    private static final String PERSON = "elistratov";
+    private final VkApiClient vk = new VkApiClient(new HttpTransportClient());
     @Inject
     private SettingsRepository settings;
     @Inject
     private ProcessedReferenceRepository references;
-
     private String producerId;
 
-    private final VkApiClient vk = new VkApiClient(new HttpTransportClient());
-
-    private static final String PERSON = "elistratov";
-    ;
     private UserActor actor;
 
     @PostConstruct
