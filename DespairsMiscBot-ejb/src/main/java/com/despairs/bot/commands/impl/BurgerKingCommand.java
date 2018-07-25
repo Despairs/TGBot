@@ -30,7 +30,7 @@ public class BurgerKingCommand implements Command {
     private static final String URL = "https://burgerking.ru/";
     private static final String COUPONS_ENDPOINT = "bigboard/coupons";
 
-    private static final String COUPON_REF = "img[class=col-xs-11 mt20]";
+    private static final String COUPON_REF = "img[class=coupon-img mt20]";
     private static final String SRC = "src";
 
     @Override
