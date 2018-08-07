@@ -25,7 +25,7 @@ public class DTFMessageProducer implements MessageProducer {
 
     private static final String ID = "air-entry-id";
     private static final String REFERENCE = "a";
-    private static final String TITLE = "h2 span";
+    private static final String TITLE = "h2";
     private static final String HREF = "href";
 
     @Inject
