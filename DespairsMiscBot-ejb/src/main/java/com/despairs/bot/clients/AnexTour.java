@@ -18,10 +18,10 @@ public interface AnexTour {
 
     AnexTour API = Feign.builder()
             .decoder(new GsonDecoder())
-            .target(AnexTour.class, "http://www.anextour.com");
+            .target(AnexTour.class, "https://www.anextour.com");
 
     @Headers("User-Agent: Chrome/67.0.3396.62")
-    @RequestLine("GET /Api/GetCurrency?market=ANEXRU&date={date}")
+    @RequestLine("GET /api/GetCurrency?market=ANEXRU&date={date}")
     List<List<Currency>> getCurrency(@Param("date") LocalDate date);
 
     @Data
