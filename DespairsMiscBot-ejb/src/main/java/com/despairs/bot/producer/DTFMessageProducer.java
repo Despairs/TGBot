@@ -23,7 +23,7 @@ public class DTFMessageProducer implements MessageProducer {
     private static final String POST_CONTENT = "div.entry_content";
     private static final String POST_META_INFO = "div.b-article";
 
-    private static final String ID = "air-entry-id";
+    private static final String ID = "data-content-id";
     private static final String REFERENCE = "a";
     private static final String TITLE = "h2";
     private static final String HREF = "href";
