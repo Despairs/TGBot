@@ -13,10 +13,11 @@ import org.telegram.telegrambots.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.api.objects.Message;
 
 /**
- *
  * @author EKovtunenko
  */
 public class MessageBuilder {
+
+    private static final int MAX_LENGTH = 4000;
 
     public static PartialBotApiMethod<Message> build(TGMessage message, String chatId, Integer replyTo) {
         PartialBotApiMethod<Message> ret = null;
@@ -37,11 +38,16 @@ public class MessageBuilder {
 
     private static SendMessage createTextMessage(TGMessage message, String chatId, Integer replyTo) {
         String msg = message.getText();
+        String link = message.getLink();
         if (msg == null) {
             msg = "";
         }
-        if (message.getLink() != null) {
-            msg += "\n" + message.getLink();
+        boolean isLinkPresent = link != null;
+        if (msg.length() > MAX_LENGTH) {
+            msg = msg.substring(0, isLinkPresent ? MAX_LENGTH - link.length() : MAX_LENGTH);
+        }
+        if (isLinkPresent) {
+            msg += "\n" + link;
         }
         return new SendMessage()
                 .setChatId(chatId)
