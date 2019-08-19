@@ -19,12 +19,11 @@ public class DTFMessageProducer implements MessageProducer {
 
     private static final String URL = "https://dtf.ru/";
     private static final String POST = "div.feed__item";
-    private static final String ENTRY_WRAPPER = "div.entry_wrapper";
-    private static final String POST_CONTENT = "div.entry_content";
-    private static final String POST_META_INFO = "div.b-article";
+    private static final String CONTENT = "div.content-feed";
+    private static final String CONTENT_HEADER = "div.content-header";
+    private static final String CONTENT_LINK = "a.content-feed__link";
 
     private static final String ID = "data-content-id";
-    private static final String REFERENCE = "a";
     private static final String TITLE = "h2";
     private static final String HREF = "href";
 
@@ -38,16 +37,15 @@ public class DTFMessageProducer implements MessageProducer {
 
         doc.select(POST).stream()
                 .map(e -> {
-                    Elements post = e.select(ENTRY_WRAPPER);
+                    Elements post = e.select(CONTENT);
                     String id = post.attr(ID);
-                    return new Post(id, post.select(POST_CONTENT));
+                    return new Post(id, post);
                 })
                 .filter(post -> !references.isReferenceStored(post.id, PRODUCER_ID))
                 .forEach(post -> {
                             TGMessage m = new TGMessage(MessageType.TEXT);
-                            Elements metaInfo = post.content.select(POST_META_INFO);
-                            m.setText(metaInfo.select(TITLE).text());
-                            m.setLink(post.content.select(REFERENCE).attr(HREF));
+                            m.setText(post.content.select(CONTENT_HEADER).select(TITLE).text());
+                            m.setLink(post.content.select(CONTENT_LINK).attr(HREF));
                             ret.add(m);
                             references.createReference(post.id, PRODUCER_ID);
                         }

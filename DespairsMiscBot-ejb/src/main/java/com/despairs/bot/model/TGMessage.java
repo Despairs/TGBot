@@ -6,12 +6,14 @@
 package com.despairs.bot.model;
 
 import lombok.Data;
+import lombok.ToString;
 import org.telegram.telegrambots.api.objects.replykeyboard.ReplyKeyboard;
 
 /**
  * @author EKovtunenko
  */
 @Data
+@ToString
 public class TGMessage {
 
     private String link;
