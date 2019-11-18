@@ -43,7 +43,7 @@ public class TelegramUpdateProducer {
     private int lastReceivedUpdate = 0;
 
     public List<Update> produce() {
-        List<Update> updates = Collections.EMPTY_LIST;
+        List<Update> updates = Collections.emptyList();
         try {
             request = buildRequest();
             HttpPost httpPost = buildHttpPost(request);
@@ -77,7 +77,7 @@ public class TelegramUpdateProducer {
     }
 
     private List<Update> extractUpdateList(CloseableHttpResponse response) throws IOException, TelegramApiRequestException {
-        List<Update> updates = Collections.EMPTY_LIST;
+        List<Update> updates = Collections.emptyList();
         BufferedHttpEntity buf = new BufferedHttpEntity(response.getEntity());
         String responseContent = EntityUtils.toString(buf, StandardCharsets.UTF_8);
         if (response.getStatusLine().getStatusCode() == 200) {

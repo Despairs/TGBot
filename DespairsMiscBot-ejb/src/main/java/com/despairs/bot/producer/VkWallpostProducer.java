@@ -28,6 +28,7 @@ import java.util.List;
 /**
  * @author EKovtunenko
  */
+@Disabled
 public class VkWallpostProducer implements MessageProducer {
 
     private static final String VIDEO_LINK_PATTERN = "https://vk.com/video%d_%d";

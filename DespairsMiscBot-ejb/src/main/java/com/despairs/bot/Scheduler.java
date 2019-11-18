@@ -8,8 +8,10 @@ package com.despairs.bot;
 import com.despairs.bot.db.repo.SettingsRepository;
 import com.despairs.bot.model.Settings;
 import com.despairs.bot.model.TGMessage;
+import com.despairs.bot.producer.Disabled;
 import com.despairs.bot.producer.MessageProducer;
 import com.despairs.bot.tg.TGMessageSender;
+import com.despairs.bot.utils.AnnotationUtils;
 import org.telegram.telegrambots.api.objects.Message;
 import ru.iflex.commons.logging.Log4jLogger;
 
@@ -19,13 +21,11 @@ import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author EKovtunenko
  */
 @Singleton
@@ -67,35 +67,44 @@ public class Scheduler {
         if (settings == null) {
             init();
         } else {
-            Date date = new Date();
             logger.info("Check for new messages");
             producers.forEach(producer -> {
-                try {
-                    List<TGMessage> messages = producer.produce();
-                    if (!messages.isEmpty()) {
-                        logger.info("Got {} messages from producer {}", messages.size(), producer.getClass().getSimpleName());
-                        Map<TGMessage, Integer> sendedMessages = new HashMap<>();
-                        messages.forEach(m -> {
-                            Integer replyTo = null;
-                            if (m.getRef() != null) {
-                                replyTo = sendedMessages.get(m.getRef());
-                            }
-                            String _chatId = m.getChatId() != null ? m.getChatId() : defaultChannelId;
-                            if (replyTo == null && m.getRef() != null) {
-                                Message ret = sender.sendTGMessage(m.getRef(), _chatId, replyTo);
-                                replyTo = ret.getMessageId();
-                                sendedMessages.put(m.getRef(), replyTo);
-                            }
-                            Message ret = sender.sendTGMessage(m, _chatId, replyTo);
-                            if (ret != null) {
-                                sendedMessages.put(m, ret.getMessageId());
-                            }
-                        });
+                if (isProducerEnabled(producer)) {
+                    try {
+                        List<TGMessage> messages = producer.produce();
+                        if (!messages.isEmpty()) {
+                            logger.info("Got {} messages from producer {}", messages.size(), producer.getClass().getSimpleName());
+                            sendMessages(messages);
+                        }
+                    } catch (Exception ex) {
+                        logger.error(ex);
                     }
-                } catch (Exception ex) {
-                    logger.error(ex);
                 }
             });
         }
+    }
+
+    private void sendMessages(List<TGMessage> messages) {
+        Map<TGMessage, Integer> sendedMessages = new HashMap<>();
+        messages.forEach(m -> {
+            Integer replyTo = null;
+            if (m.getRef() != null) {
+                replyTo = sendedMessages.get(m.getRef());
+            }
+            String _chatId = m.getChatId() != null ? m.getChatId() : defaultChannelId;
+            if (replyTo == null && m.getRef() != null) {
+                Message ret = sender.sendTGMessage(m.getRef(), _chatId, replyTo);
+                replyTo = ret.getMessageId();
+                sendedMessages.put(m.getRef(), replyTo);
+            }
+            Message ret = sender.sendTGMessage(m, _chatId, replyTo);
+            if (ret != null) {
+                sendedMessages.put(m, ret.getMessageId());
+            }
+        });
+    }
+
+    private boolean isProducerEnabled(MessageProducer producer) {
+        return AnnotationUtils.findAnnotation(producer.getClass(), Disabled.class) == null;
     }
 }

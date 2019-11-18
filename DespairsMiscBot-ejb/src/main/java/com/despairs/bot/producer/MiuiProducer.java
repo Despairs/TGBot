@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 /**
  * @author EKovtunenko
  */
+@Disabled
 public class MiuiProducer implements MessageProducer {
 
     private static final String PRODUCER_ID = "MIUI";
